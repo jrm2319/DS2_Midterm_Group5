@@ -1,7 +1,7 @@
 ---
 title: "Data Science 2 Midterm"
 output: github_document
-Name: Jasmin Martinez, Ixtaccihuatl Obregon, Elliot Kim
+Name: Jasmin Martinez (JRM2319), Ixtaccihuatl Obregon, Elliot Kim
 Date: 03/24/2025
 ---
 Testing
