@@ -21,6 +21,87 @@ library(tidyverse)
 library(ggplot2)
 library(bayesQR) 
 
+## Observe first couple rows
+```{r cars}
+head(dat1)
+str(dat1)
+summary(dat1)
+```
+
+## Check for missing values
+```{r}
+colSums(is.na(dat1))
+```
+
+## Check for duplicates
+```{r}
+sum(duplicated(dat1))
+```
+
+## Histogram for distribution of log-transformed antibody levels 
+```{r}
+ggplot(dat1, aes(x = log_antibody)) + 
+  geom_histogram(bins = 30, fill = "green", alpha = 0.5) + 
+  theme_minimal() + 
+  labs(title = "Distribution of Log-Antibody Levels",
+       x = "Log-Antibody Level",
+       y = "Frequency")
+```
+## Assess outliers
+```{r}
+ggplot(dat1, aes(y = log_antibody)) +
+  geom_boxplot(fill = "blue", alpha = 0.5) + 
+  theme_minimal()
+```
+
+## Summarize continuous variables
+```{r}
+summary(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
+```
+
+## Assess correlation among continuous variables
+```{R}
+cor(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
+```
+
+## Assess relationship between log_antibody and continuous variables
+```{R}
+ggplot(dat1, aes(x = age, y = log_antibody)) + 
+  geom_point(alpha = 0.5) + 
+  geom_smooth(method = "lm", col = "blue") + 
+  theme_minimal()
+
+ggplot(dat1, aes(x = height, y = log_antibody)) + 
+  geom_point(alpha = 0.5) + 
+  geom_smooth(method = "lm", col = "blue") + 
+  theme_minimal()
+
+ggplot(dat1, aes(x = weight, y = log_antibody)) + 
+  geom_point(alpha = 0.5) + 
+  geom_smooth(method = "lm", col = "blue") + 
+  theme_minimal()
+
+ggplot(dat1, aes(x = bmi, y = log_antibody)) + 
+  geom_point(alpha = 0.5) + 
+  geom_smooth(method = "lm", col = "blue") + 
+  theme_minimal()
+
+ggplot(dat1, aes(x = SBP, y = log_antibody)) + 
+  geom_point(alpha = 0.5) + 
+  geom_smooth(method = "lm", col = "blue") + 
+  theme_minimal()
+
+ggplot(dat1, aes(x = LDL, y = log_antibody)) + 
+  geom_point(alpha = 0.5) + 
+  geom_smooth(method = "lm", col = "blue") + 
+  theme_minimal()
+
+ggplot(dat1, aes(x = time, y = log_antibody)) + 
+  geom_point(alpha = 0.5) + 
+  geom_smooth(method = "lm", col = "blue") + 
+  theme_minimal()
+```
+
 data(dat1)
 x = model.matrix(log_antibody ~ ., dat1)
 y = dat1$log_antibody
