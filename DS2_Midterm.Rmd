@@ -20,9 +20,10 @@ library(earth)
 library(tidyverse)
 library(ggplot2)
 library(bayesQR) 
+```
 
 ## Observe first couple rows
-```{r cars}
+```{R}
 head(dat1)
 str(dat1)
 summary(dat1)
