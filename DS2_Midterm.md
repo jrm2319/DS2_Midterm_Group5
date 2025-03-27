@@ -117,7 +117,7 @@ data(dat1)
     ## Warning in data(dat1): data set 'dat1' not found
 
 ``` r
-x = model.matrix(log_antibody ~ ., dat1)[,-1]
+x = model.matrix(log_antibody ~ ., dat1)
 y = dat1$log_antibody
 
 theme1 <- trellis.par.get()
@@ -140,8 +140,98 @@ are continuous are showing non-linear function. Given this, the optimal
 model to use to explore the nonlinear relationships between predictors
 of interest and antibody level, is a Generalized Additive Model (GAM).
 
+### Creating factors for the Race and Smoking variables to use in the model
+
+``` r
+dat1$race = factor(dat1$race, 
+                         levels = c(1, 2, 3, 4), 
+                         labels = c("White", "Asian", "Black", "Hispanic"))
+
+dat1$smoking = factor(dat1$smoking, 
+                            levels = c(0, 1, 2), 
+                            labels = c("Never", "Former", "Current"))
+
+dat1$race = relevel(dat1$race, ref = "White")
+dat1$smoking = relevel(dat1$smoking, ref = "Never")
+```
+
 ### Generalized Additive Model (GAM)
 
 ``` r
 set.seed(2)
+
+gam.m1 = gam(log_antibody ~ age + gender + race + smoking + height + weight + bmi + diabetes + hypertension + SBP + LDL + time,
+data = dat1)
+
+gam.m2 = gam(log_antibody ~ s(age) + gender + race + smoking + height + weight + s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + s(time),
+data = dat1)
+
+gam.m3 = gam(log_antibody ~ s(age) + gender + race + smoking + te(height, weight) + s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + s(time),
+data = dat1)
+
+anova(gam.m1, gam.m2, gam.m3, test = "F")
 ```
+
+    ## Analysis of Deviance Table
+    ## 
+    ## Model 1: log_antibody ~ age + gender + race + smoking + height + weight + 
+    ##     bmi + diabetes + hypertension + SBP + LDL + time
+    ## Model 2: log_antibody ~ s(age) + gender + race + smoking + height + weight + 
+    ##     s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + s(time)
+    ## Model 3: log_antibody ~ s(age) + gender + race + smoking + te(height, 
+    ##     weight) + s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + 
+    ##     s(time)
+    ##   Resid. Df Resid. Dev      Df Deviance       F Pr(>F)    
+    ## 1    4984.0     1509.4                                    
+    ## 2    4971.2     1380.0 12.8235  129.390 36.3775 <2e-16 ***
+    ## 3    4968.5     1378.8  2.6365    1.235  1.6882 0.1739    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+``` r
+plot(gam.m2)
+```
+
+![](DS2_Midterm_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-5-2.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-5-3.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-5-4.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-5-5.png)<!-- -->
+
+``` r
+vis.gam(gam.m3, view = c("height","weight"),
+color = "topo")
+```
+
+![](DS2_Midterm_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+``` r
+ctrl1 = trainControl(method = "cv", number = 10)
+x = dat1[, c("age", "gender", "race", "smoking", "height", "weight", "bmi", 
+              "diabetes", "hypertension", "SBP", "LDL", "time")]
+y = dat1$log_antibody
+
+set.seed(2)
+gam.fit = train(x, y,
+method = "gam",
+trControl = ctrl1)
+gam.fit$bestTune
+```
+
+    ##   select method
+    ## 2   TRUE GCV.Cp
+
+``` r
+gam.fit$finalModel
+```
+
+    ## 
+    ## Family: gaussian 
+    ## Link function: identity 
+    ## 
+    ## Formula:
+    ## .outcome ~ gender + diabetes + hypertension + smoking + race + 
+    ##     s(age) + s(SBP) + s(LDL) + s(bmi) + s(time) + s(height) + 
+    ##     s(weight)
+    ## 
+    ## Estimated degrees of freedom:
+    ## 0.991 0.000 0.000 4.179 7.892 1.234 0.000 
+    ##  total = 23.3 
+    ## 
+    ## GCV score: 0.2786734
