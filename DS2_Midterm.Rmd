@@ -4,8 +4,44 @@ output: github_document
 Name: Jasmin Martinez (JRM2319), Ixtaccihuatl Obregon, Elliot Kim
 Date: 03/24/2025
 ---
-Testing
+### Loading Data
 ```{r}
+load("dat1.RData")
+```
 
+### Understanding linearity of variables in dat1:
+```{r}
+library(caret)
+library(tidymodels)
+library(splines)
+library(mgcv)
+library(pdp)
+library(earth)
+library(tidyverse)
+library(ggplot2)
+library(bayesQR) 
+
+data(dat1)
+x = model.matrix(log_antibody ~ ., dat1)[,-1]
+y = dat1$log_antibody
+
+theme1 <- trellis.par.get()
+theme1$plot.symbol$col <- rgb(.2, .4, .2, .5)
+theme1$plot.symbol$pch <- 16
+theme1$plot.line$col <- rgb(.8, .1, .1, 1)
+theme1$plot.line$lwd <- 2
+theme1$strip.background$col <- rgb(.0, .2, .6, .2)
+
+trellis.par.set(theme1)
+
+featurePlot(x[, -c(5, 7)], y, plot = "scatter", labels = c("", "Y"),
+type = c("p"), layout = c(3, 2))
+```
+
+All variables of interest are binary or continuous. The variables that are continuous are showing non-linear function. Given this, the optimal model to use to explore the nonlinear relationships between predictors of interest and antibody level, is a Generalized Additive Model (GAM). 
+
+### Generalized Additive Model (GAM)
+```{r}
+set.seed(2)
 ```
 
