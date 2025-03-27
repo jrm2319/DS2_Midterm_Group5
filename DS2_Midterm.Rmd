@@ -7,6 +7,7 @@ Date: 03/24/2025
 ### Loading Data
 ```{r}
 load("dat1.RData")
+load("dat2.RData")
 ```
 
 ### Understanding linearity of variables in dat1:
@@ -186,6 +187,8 @@ ggplot(dat2, aes(x = time, y = log_antibody)) +
   theme_minimal()
 ```
 
+### Assessing lineraity of Dat1
+```{r}
 data(dat1)
 x = model.matrix(log_antibody ~ ., dat1)
 y = dat1$log_antibody
@@ -203,9 +206,7 @@ featurePlot(x[, -c(5, 7)], y, plot = "scatter", labels = c("", "Y"),
 type = c("p"), layout = c(3, 2))
 ```
 
-All variables of interest are binary or continuous. The variables that are continuous are showing non-linear function. Given this, the optimal model to use to explore the nonlinear relationships between predictors of interest and antibody level, is a Generalized Additive Model (GAM). 
-
-### Creating factors for the Race and Smoking variables to use in the model 
+### Creating factors for the Race and Smoking variables to use in the model--for Dat1
 ```{r}
 dat1$race = factor(dat1$race, 
                          levels = c(1, 2, 3, 4), 
@@ -219,7 +220,7 @@ dat1$race = relevel(dat1$race, ref = "White")
 dat1$smoking = relevel(dat1$smoking, ref = "Never")
 ```
 
-### Generalized Additive Model (GAM)
+### Generalized Additive Model (GAM)--Using Dat1 data
 ```{r}
 set.seed(2)
 
@@ -235,17 +236,86 @@ data = dat1)
 anova(gam.m1, gam.m2, gam.m3, test = "F")
 ```
 
-
 ```{r}
 plot(gam.m2)
 ```
-
 
 ```{r}
 vis.gam(gam.m3, view = c("height","weight"),
 color = "topo")
 ```
 
+```{r}
+ctrl1 = trainControl(method = "cv", number = 10)
+x = dat1[, c("age", "gender", "race", "smoking", "height", "weight", "bmi", 
+              "diabetes", "hypertension", "SBP", "LDL", "time")]
+y = dat1$log_antibody
+
+set.seed(2)
+gam.fit = train(x, y,
+method = "gam",
+trControl = ctrl1)
+gam.fit$bestTune
+gam.fit$finalModel
+```
+
+### Assessing lineraity of Dat2
+```{r}
+data(dat2)
+x = model.matrix(log_antibody ~ ., dat2)
+y = dat2$log_antibody
+
+theme1 <- trellis.par.get()
+theme1$plot.symbol$col <- rgb(.2, .4, .2, .5)
+theme1$plot.symbol$pch <- 16
+theme1$plot.line$col <- rgb(.8, .1, .1, 1)
+theme1$plot.line$lwd <- 2
+theme1$strip.background$col <- rgb(.0, .2, .6, .2)
+
+trellis.par.set(theme1)
+
+featurePlot(x[, -c(5, 7)], y, plot = "scatter", labels = c("", "Y"),
+type = c("p"), layout = c(3, 2))
+```
+
+### Creating factors for the Race and Smoking variables to use in the model--for Dat2
+```{r}
+dat2$race = factor(dat2$race, 
+                         levels = c(1, 2, 3, 4), 
+                         labels = c("White", "Asian", "Black", "Hispanic"))
+
+dat2$smoking = factor(dat2$smoking, 
+                            levels = c(0, 1, 2), 
+                            labels = c("Never", "Former", "Current"))
+
+dat2$race = relevel(dat2$race, ref = "White")
+dat2$smoking = relevel(dat2$smoking, ref = "Never")
+```
+
+### Generalized Additive Model (GAM)--Using Dat2 data
+```{r}
+set.seed(2)
+
+gam.m1 = gam(log_antibody ~ age + gender + race + smoking + height + weight + bmi + diabetes + hypertension + SBP + LDL + time,
+data = dat2)
+
+gam.m2 = gam(log_antibody ~ s(age) + gender + race + smoking + height + weight + s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + s(time),
+data = dat2)
+
+gam.m3 = gam(log_antibody ~ s(age) + gender + race + smoking + te(height, weight) + s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + s(time),
+data = dat2)
+
+anova(gam.m1, gam.m2, gam.m3, test = "F")
+```
+
+```{r}
+plot(gam.m2)
+```
+
+```{r}
+vis.gam(gam.m3, view = c("height","weight"),
+color = "topo")
+```
 
 ```{r}
 ctrl1 = trainControl(method = "cv", number = 10)
