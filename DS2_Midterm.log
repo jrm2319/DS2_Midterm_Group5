@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.30)  30 MAR 2025 16:42
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.30)  30 MAR 2025 17:30
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -482,8 +482,8 @@ you left one out. Proceed, with fingers crossed.
 
  
 Here is how much of TeX's memory you used:
- 11365 strings out of 475171
- 174952 string characters out of 5765333
+ 11364 strings out of 475171
+ 174893 string characters out of 5765057
  568919 words of memory out of 5000000
  34195 multiletter control sequences out of 15000+600000
  605904 words of font info for 79 fonts, out of 8000000 for 9000

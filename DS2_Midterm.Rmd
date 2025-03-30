@@ -26,6 +26,7 @@ library(bayesQR)
 library(patchwork)
 library(knitr)
 library(gratia)
+library(gridExtra)
   })
 })
 ```
@@ -150,7 +151,8 @@ p7 = ggplot(dat1, aes(x = time, y = log_antibody)) +
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-(p1 | p2 | p3) / (p4 | p5 | p6) / p7
+dat1_combinedplots = (p1 | p2 | p3) / (p4 | p5 | p6) / p7
+print(dat1_combinedplots)
 ```
 
 ```{R, eval=FALSE, echo=FALSE}
@@ -241,7 +243,7 @@ p7.2 = ggplot(dat2, aes(x = time, y = log_antibody)) +
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-(p1.2 | p2.2 | p3.2) / (p4.2 | p5.2 | p6.2) / p7.2
+grid.arrange(p1.2, p2.2, p3.2, p4.2, p5.2, p6.2, p7.2, ncol = 3)
 ```
 
 ```{r, fig.width=4, fig.height=3, out.width='80%', fig.align='center',echo=FALSE}
