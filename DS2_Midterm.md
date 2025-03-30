@@ -5,15 +5,19 @@ Data Science 2 Midterm
 
     ## Loading required package: lattice
 
+<<<<<<< HEAD
     ## ── Attaching packages ────────────────────────────────────── tidymodels 1.3.0 ──
+=======
+    ## ── Attaching packages ────────────────────────────────────── tidymodels 1.2.0 ──
+>>>>>>> f5e371ff37c9e841cbcaba1343c15e0de86916ee
 
     ## ✔ broom        1.0.7     ✔ rsample      1.2.1
     ## ✔ dials        1.4.0     ✔ tibble       3.2.1
     ## ✔ dplyr        1.1.4     ✔ tidyr        1.3.1
-    ## ✔ infer        1.0.7     ✔ tune         1.3.0
-    ## ✔ modeldata    1.4.0     ✔ workflows    1.2.0
+    ## ✔ infer        1.0.7     ✔ tune         1.2.1
+    ## ✔ modeldata    1.4.0     ✔ workflows    1.1.4
     ## ✔ parsnip      1.3.0     ✔ workflowsets 1.1.0
-    ## ✔ purrr        1.0.4     ✔ yardstick    1.3.2
+    ## ✔ purrr        1.0.2     ✔ yardstick    1.3.2
     ## ✔ recipes      1.1.1
 
     ## ── Conflicts ───────────────────────────────────────── tidymodels_conflicts() ──
@@ -26,6 +30,10 @@ Data Science 2 Midterm
     ## ✖ yardstick::sensitivity() masks caret::sensitivity()
     ## ✖ yardstick::specificity() masks caret::specificity()
     ## ✖ recipes::step()          masks stats::step()
+<<<<<<< HEAD
+=======
+    ## • Search for functions across packages at https://www.tidymodels.org/find/
+>>>>>>> f5e371ff37c9e841cbcaba1343c15e0de86916ee
 
     ## Loading required package: nlme
 
@@ -60,7 +68,11 @@ Data Science 2 Midterm
 
     ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
     ## ✔ forcats   1.0.0     ✔ readr     2.1.5
+<<<<<<< HEAD
     ## ✔ lubridate 1.9.3     ✔ stringr   1.5.1
+=======
+    ## ✔ lubridate 1.9.4     ✔ stringr   1.5.1
+>>>>>>> f5e371ff37c9e841cbcaba1343c15e0de86916ee
     ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ readr::col_factor() masks scales::col_factor()
     ## ✖ nlme::collapse()    masks dplyr::collapse()
@@ -97,10 +109,17 @@ statistics of continuous variables, correlation analysis, and various
 visualization techniques were conducted.
 
 Looking at , the distribution of is approximately normal, as seen in
+<<<<<<< HEAD
 Figure (fig:d1-log-antibody-hist) and Figure (fig:d1-log-antibody-qq).
 High and low outliers can be observed in the Figure
 @ref(fig:d1-log-antibody-box). Most covariates have weak or low
 correlation with each other. There is a high positive correlation
+=======
+Figure @ref(fig:d1-log-antibody-hist) and Figure
+@ref(fig:d1-log-antibody-qq). High and low outliers can be observed in
+the Figure @ref(fig:d1-log-antibody-box). Most covariates have weak or
+low correlation with each other. There is a high positive correlation
+>>>>>>> f5e371ff37c9e841cbcaba1343c15e0de86916ee
 between and ($\rho = 0.72$) and a moderate negative correlation between
 and ($\rho = -0.50$). There is a mild negative correlation between and
 ($\rho = -0.23$), ($\rho = -0.17$), and ($\rho = -0.15$). There is a
@@ -110,10 +129,17 @@ near zero, indicating no linear relationship. Linear relationships can
 be seen in Figure @ref(fig:d1-log-antibody-lin).
 
 Exploring , the distribution of is also approximately normal, as shown
+<<<<<<< HEAD
 Figure (fig:d2-log-antibody-hist) and Figure (fig:d2-log-antibody-qq).
 High and low outliers are again visible in the Figure
 (fig:d2-log-antibody-box). Most covariates exhibit weak or low
 correlation with each other. There is a high positive correlation
+=======
+Figure @ref(fig:d2-log-antibody-hist) and Figure
+@ref(fig:d2-log-antibody-qq). High and low outliers are again visible in
+the Figure @ref(fig:d2-log-antibody-box). Most covariates exhibit weak
+or low correlation with each other. There is a high positive correlation
+>>>>>>> f5e371ff37c9e841cbcaba1343c15e0de86916ee
 between and ($\rho = 0.72$) and a moderate negative correlation between
 and ($\rho = -0.53$). There is a mild negative correlation between and
 ($\rho = -0.16$), ($\rho = -0.11$), and ($\rho = -0.08$). A mild
@@ -121,7 +147,11 @@ positive correlation exists between and ($\rho = 0.08$). The
 correlations between and ($\rho = -0.01$), ($\rho = -0.00$), and
 ($\rho = -0.25$) are near zero or weak, again suggesting no strong
 linear relationship. Linear relationships can be seen in Figure
+<<<<<<< HEAD
 (fig:d2-log-antibody-lin).
+=======
+@ref(fig:d2-log-antibody-lin).
+>>>>>>> f5e371ff37c9e841cbcaba1343c15e0de86916ee
 
     ##   id age gender race smoking height weight  bmi diabetes hypertension SBP LDL
     ## 1  1  50      0    1       0  176.1   68.3 22.0        0            0 130  82
@@ -541,6 +571,7 @@ dat2</figcaption>
 
 The prediction model’s robustness and generalizability is mostly
 acceptable for . Prediction accuracy was determined by the mean squared
+<<<<<<< HEAD
 error (MSE) at 0.325 showing a low average on unseen data. The
 prediction model shows model stability with generalized cross-validation
 (GCV) score of 0.279. Looking at (fig:dx-plots) we evaluate Predicted vs
@@ -555,3 +586,16 @@ model’s predictions. Right-skewness can be observed in the predicted vs
 residual plots, which could suggest some non-linearity. The distribution
 of residuals looks approximately normal and does not have extreme
 outliers or multi-modality.
+=======
+error (MSE) at 0.325 showing a low average on unseen data. prediction
+model shows model stability with generalized cross-validation (GCV)
+score of 0.279. The Looking at @ref(fig:dx-plots) we evaluate Predicted
+vs Actual log_antibody Levels, Residuals vs Predicted, and the
+Distribution of Residuals. Predictions are mostly aligned with the
+observed values especially in the 9.5-10.5 predicted range. There is
+mild under-prediction below value 9. The predicted vs residual plot
+shows residuals mostly centered and near 0. Right-skewness can be
+observed in the predicted vs residual plots, which could suggest some
+non-linearity. The distribution of residuals looks approximately normal
+and does not have extreme outliers or multi-modality.
+>>>>>>> f5e371ff37c9e841cbcaba1343c15e0de86916ee
