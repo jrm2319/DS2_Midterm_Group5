@@ -23,7 +23,7 @@ library(ggplot2)
 library(bayesQR) 
 library(patchwork)
 library(knitr)
-
+library(gratia)
 ```
 
 # Exploratory Analysis
@@ -251,6 +251,7 @@ type = c("p"), layout = c(3, 2))
 The exploration and evaluation of \textbf{dat1} is used to help build a prediction model specific ally using GAM to understand how demographic and clinical factors influence antibody responses and how antibody levels change over time following vaccination. Considering the researcher collects a new and independent dataset, \textbf{dat2}, we discover the correlation between \textbf{time} and \textbf{log_antibody} is stronger than in \textbf{dat1} and similarly has weak linear relationships with most covariates. \textbf{Dat2} allows us to evaluate the robustness and generalizability of our prediction model. 
 
 # Model Trainging 
+A Generalized Additive Model (GAM) was created to model log-transformed antibody level. Predictors included age, gender, race, smoking, height, weight, BMI, diabetes, hypertension, SBP, LDL, and time since vaccination. To prepare the data for modeling, the model matrix, x, was created using the outcome and all predictors listed above and extracted the response variable, y. Given that race and smoking were categorical variables with multiple categories, some recoding was necessary to use these variables in the model building. Therefore, race and smoking were converted into factor variables with “White” being the reference group for race and “Never” being the reference group for smoking. The three GAM models were then compared using an ANOVA test that provides the f-test; this was used to determine which model provides the best fit. Cross-validation for GAM tuning was then conducted using a 10-fold cross-validation to tune to GAM model. The best hyperparameters and the final fitted model were then retrieved. The same model training procedure was used with the new, independent dataset, dat2.
 ```{r, echo=FALSE}
 ### Creating factors for the Race and Smoking variables to use in the model--for Dat1
 dat1$race = factor(dat1$race, 
@@ -265,7 +266,7 @@ dat1$race = relevel(dat1$race, ref = "White")
 dat1$smoking = relevel(dat1$smoking, ref = "Never")
 ```
 
-```{r, echo=FALSE}
+```{r d1-anova-table, fig.cap="ANOVA Comparison of GAM Models (Dat1)" , echo=FALSE}
 ### Generalized Additive Model (GAM)--Using Dat1 data
 set.seed(2)
 
@@ -278,11 +279,17 @@ data = dat1)
 gam.m3 = gam(log_antibody ~ s(age) + gender + race + smoking + te(height, weight) + s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + s(time),
 data = dat1)
 
-anova(gam.m1, gam.m2, gam.m3, test = "F")
+anova_result = anova(gam.m1, gam.m2, gam.m3, test = "F")
+anova_table = anova(gam.m1, gam.m2, gam.m3, test = "F") |>
+  as.data.frame() |>
+  dplyr::mutate(Model = c("gam.m1", "gam.m2", "gam.m3")) |>
+  dplyr::relocate(Model, .before = 1)
+kable(anova_table, caption = "ANOVA Comparison of GAM Models (Dat1)")
 ```
 
-```{r, echo=FALSE}
-plot(gam.m2)
+```{r gam2-gridplot, fig.cap="Smooth terms for GAM model (gam.m2)", echo=FALSE}
+#plot(gam.m2)
+draw(gam.m2)
 ```
 
 ```{r, echo=FALSE}
@@ -336,7 +343,7 @@ dat2$race = relevel(dat2$race, ref = "White")
 dat2$smoking = relevel(dat2$smoking, ref = "Never")
 ```
 
-```{r, echo=FALSE}
+```{r d2-anova-table, fig.cap="ANOVA Comparison of GAM Models (Dat2)", echo=FALSE}
 ### Generalized Additive Model (GAM)--Using Dat2 data
 set.seed(2)
 
@@ -349,11 +356,17 @@ data = dat2)
 gam.m3 = gam(log_antibody ~ s(age) + gender + race + smoking + te(height, weight) + s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + s(time),
 data = dat2)
 
-anova(gam.m1, gam.m2, gam.m3, test = "F")
+anova_result = anova(gam.m1, gam.m2, gam.m3, test = "F")
+anova_table = anova(gam.m1, gam.m2, gam.m3, test = "F") |>
+  as.data.frame() |>
+  dplyr::mutate(Model = c("gam.m1", "gam.m2", "gam.m3")) |>
+  dplyr::relocate(Model, .before = 1)
+kable(anova_table, caption = "ANOVA Comparison of GAM Models (Dat2)")
 ```
 
 ```{r, echo=FALSE}
-plot(gam.m2)
+#plot(gam.m2)
+draw(gam.m2)
 ```
 
 ```{r, echo=FALSE}
@@ -374,5 +387,16 @@ method = "gam",
 trControl = ctrl1)
 gam.fit$bestTune
 gam.fit$finalModel
+
+x_test = dat2[, c("age", "gender", "race", "smoking", "height", "weight", "bmi",
+                   "diabetes", "hypertension", "SBP", "LDL", "time")]
+y_test = dat2$log_antibody
+predictions = predict(gam.fit$finalModel, newdata = dat2)
+mse = mean((predictions- dat2$log_antibody)^2)
+cat("MSE:", format(mse, nsmall = 3), "\n")
 ```
+
+(2) Evaluate the robustness and generalizability of your prediction model using the new dataset. 
+(3) Does the model generalize well to this new dataset? If the model does not generalize well, discuss possible reasons.
+
 
