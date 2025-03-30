@@ -4,14 +4,14 @@ output: github_document
 Name: Jasmin Martinez (JRM2319), Ixtaccihuatl Obregon, Elliot Kim
 Date: 03/24/2025
 ---
+
+```{r, echo=FALSE}
 ### Loading Data
-```{r}
 load("dat1.RData")
 load("dat2.RData")
 ```
 
-### Understanding linearity of variables in dat1:
-```{r}
+```{r, echo=FALSE}
 library(caret)
 library(tidymodels)
 library(splines)
@@ -21,27 +21,53 @@ library(earth)
 library(tidyverse)
 library(ggplot2)
 library(bayesQR) 
+library(patchwork)
+library(knitr)
+
 ```
 
+# Exploratory Analysis
+For datasets \textbf{dat1} and \textbf{dat2} initial exploration of the data structure, descriptive statistics of continuous variables, correlation analysis, and various visualization techniques were conducted. 
+
+Looking at \textbf{dat1}, the distribution of \textbf{log_antibody} is approximately normal, as seen in Figure \@ref(fig:d1-log-antibody-hist) and Figure \@ref(fig:d1-log-antibody-qq). High and low outliers can be observed in the Figure \@ref(fig:d1-log-antibody-box). Most covariates have weak or low correlation with each other. There is a high positive correlation between \textbf{bmi} and \textbf{weight} ($\rho = 0.72$) and a moderate negative correlation between \textbf{bmi} and \textbf{height} ($\rho = -0.50$). There is a mild negative correlation between \textbf{log_antibody} and \textbf{bmi} ($\rho = -0.23$), \textbf{weight} ($\rho = -0.17$), and \textbf{age} ($\rho = -0.15$). There is a mild positive correlation between \textbf{log_antibody} and \textbf{height} ($\rho = 0.10$). The correlation between \textbf{log_antibody} and \textbf{SBP} ($\rho = -0.06$), \textbf{LDL} ($\rho = -0.04$), and \textbf{time} ($\rho = -0.01$) are near zero, indicating no linear relationship. Linear relationships can be seen in Figure \@ref(fig:d1-log-antibody-lin).
+
+Exploring \textbf{dat2}, the distribution of \textbf{log_antibody} is also approximately normal, as shown Figure \@ref(fig:d2-log-antibody-hist) and Figure \@ref(fig:d2-log-antibody-qq). High and low outliers are again visible in the Figure \@ref(fig:d2-log-antibody-box). Most covariates exhibit weak or low correlation with each other. There is a high positive correlation between \textbf{bmi} and \textbf{weight} ($\rho = 0.72$) and a moderate negative correlation between \textbf{bmi} and \textbf{height} ($\rho = -0.53$). There is a mild negative correlation between \textbf{log_antibody} and \textbf{bmi} ($\rho = -0.16$), \textbf{weight} ($\rho = -0.11$), and \textbf{age} ($\rho = -0.08$). A mild positive correlation exists between \textbf{log_antibody} and \textbf{height} ($\rho = 0.08$). The correlations between \textbf{log_antibody} and \textbf{SBP} ($\rho = -0.01$), \textbf{LDL} ($\rho = -0.00$), and \textbf{time} ($\rho = -0.25$) are near zero or weak, again suggesting no strong linear relationship. Linear relationships can be seen in Figure \@ref(fig:d2-log-antibody-lin).
+
+
+```{R, echo=FALSE}
+### Understanding linearity of variables in dat1:
 ## Observe first couple rows
-```{R}
 head(dat1)
 str(dat1)
 summary(dat1)
+dat1 |>  
+  select(where(is.numeric)) |>
+  summarise(across(everything(), list(
+    Min = min,
+    Q1 = ~ quantile(.x, 0.25),
+    Median = median,
+    Mean = mean,
+    Q3 = ~ quantile(.x, 0.75),
+    Max = max
+  ),
+  .names = "{.fn}_{.col}"
+  )) |>
+   pivot_longer(everything(), names_to = c("Stat", "Variable"), names_sep = "_") |> 
+  pivot_wider(names_from = Stat, values_from = value) |>
+  kable(caption = "Clean Summary Statistics for Numeric Variables")
 ```
-
+```{r, echo=FALSE}
 ## Check for missing values
-```{r}
 colSums(is.na(dat1))
 ```
 
+```{r, echo=FALSE}
 ## Check for duplicates
-```{r}
 sum(duplicated(dat1))
 ```
 
+```{r d1-log-antibody-hist, fig.cap="Histogram of log_antibody levels for dat1", echo=FALSE}
 ## Histogram for distribution of log-transformed antibody levels 
-```{r}
 ggplot(dat1, aes(x = log_antibody)) + 
   geom_histogram(bins = 30, fill = "green", alpha = 0.5) + 
   theme_minimal() + 
@@ -49,82 +75,90 @@ ggplot(dat1, aes(x = log_antibody)) +
        x = "Log-Antibody Level",
        y = "Frequency")
 ```
+
+```{r d1-log-antibody-qq, fig.cap="Q-Q plot of log_antibody levels for dat1", echo=FALSE}
+# Q-Q plot
+qqnorm(dat1$log_antibody)
+qqline(dat1$log_antibody, col = "blue")
+```
+
+```{r d1-log-antibody-box, fig.cap="Boxplot of log_antibody levels for dat1", echo=FALSE}
 ## Assess outliers
-```{r}
 ggplot(dat1, aes(y = log_antibody)) +
   geom_boxplot(fill = "blue", alpha = 0.5) + 
   theme_minimal()
 ```
 
+```{r, echo=FALSE}
 ## Summarize continuous variables
-```{r}
 summary(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
 ```
 
+```{R, echo=FALSE}
 ## Assess correlation among continuous variables
-```{R}
 cor(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
 ```
 
+```{R d1-log-antibody-lin, fig.cap="Linearity between log_antibody levels and covariates for dat1", echo=FALSE}
 ## Assess relationship between log_antibody and continuous variables
-```{R}
-ggplot(dat1, aes(x = age, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
+p1 = ggplot(dat1, aes(x = age, y = log_antibody)) + 
+  geom_point(alpha = 0.2, size = 0.5) + 
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-ggplot(dat1, aes(x = height, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
+p2 = ggplot(dat1, aes(x = height, y = log_antibody)) + 
+  geom_point(alpha = 0.2, size = 0.5) + 
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-ggplot(dat1, aes(x = weight, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
+p3 = ggplot(dat1, aes(x = weight, y = log_antibody)) + 
+  geom_point(alpha = 0.2, size = 0.5) + 
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-ggplot(dat1, aes(x = bmi, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
+p4 = ggplot(dat1, aes(x = bmi, y = log_antibody)) + 
+  geom_point(alpha = 0.2, size = 0.5) + 
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-ggplot(dat1, aes(x = SBP, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
+p5 = ggplot(dat1, aes(x = SBP, y = log_antibody)) + 
+  geom_point(alpha = 0.2, size = 0.5) + 
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-ggplot(dat1, aes(x = LDL, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
+p6 = ggplot(dat1, aes(x = LDL, y = log_antibody)) + 
+  geom_point(alpha = 0.2, size = 0.5) + 
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-ggplot(dat1, aes(x = time, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
+p7 = ggplot(dat1, aes(x = time, y = log_antibody)) + 
+  geom_point(alpha = 0.2, size = 0.5) + 
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
+
+(p1 | p2 | p3) / (p4 | p5 | p6) / p7
 ```
 
+```{R, echo=FALSE}
 ## Repeat for dat2
-
 ## Observe first couple rows
-```{R}
 head(dat2)
 str(dat2)
 summary(dat2)
 ```
 
+```{r, echo=FALSE}
 ## Check for missing values
-```{r}
 colSums(is.na(dat2))
 ```
 
+```{r, echo=FALSE}
 ## Check for duplicates
-```{r}
 sum(duplicated(dat2))
 ```
 
+```{r d2-log-antibody-hist, fig.cap="Histogram of log_antibody levels for dat2", echo=FALSE}
 ## Histogram for distribution of log-transformed antibody levels 
-```{r}
 ggplot(dat2, aes(x = log_antibody)) + 
   geom_histogram(bins = 30, fill = "green", alpha = 0.5) + 
   theme_minimal() + 
@@ -132,64 +166,72 @@ ggplot(dat2, aes(x = log_antibody)) +
        x = "Log-Antibody Level",
        y = "Frequency")
 ```
+
+```{r d2-log-antibody-qq, fig.cap="Q-Q plot of log_antibody levels for dat2", echo=FALSE}
+# Q-Q plot
+qqnorm(dat2$log_antibody)
+qqline(dat2$log_antibody, col = "blue")
+```
+
+```{r d2-log-antibody-box, fig.cap="Boxplot of log_antibody levels for dat2", echo=FALSE}
 ## Assess outliers
-```{r}
 ggplot(dat2, aes(y = log_antibody)) +
   geom_boxplot(fill = "blue", alpha = 0.5) + 
   theme_minimal()
 ```
 
+```{r, echo=FALSE}
 ## Summarize continuous variables
-```{r}
 summary(dat2[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
 ```
 
+```{R, echo=FALSE}
 ## Assess correlation among continuous variables
-```{R}
 cor(dat2[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
 ```
 
+```{R d2-log-antibody-lin, fig.cap="Linearity between log_antibody levels and covariates for dat2", echo=FALSE}
 ## Assess relationship between log_antibody and continuous variables
-```{R}
-ggplot(dat2, aes(x = age, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
+p1.2 = ggplot(dat2, aes(x = age, y = log_antibody)) + 
+  geom_point(alpha = 0.2, size = 0.5) + 
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-ggplot(dat2, aes(x = height, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
+p2.2 = ggplot(dat2, aes(x = height, y = log_antibody)) + 
+  geom_point(alpha = 0.2, size = 0.5) + 
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-ggplot(dat2, aes(x = weight, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
+p3.2 = ggplot(dat2, aes(x = weight, y = log_antibody)) + 
+  geom_point(alpha = 0.2, size = 0.5) + 
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-ggplot(dat2, aes(x = bmi, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
+p4.2 = ggplot(dat2, aes(x = bmi, y = log_antibody)) + 
+  geom_point(alpha = 0.2, size = 0.5) + 
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-ggplot(dat2, aes(x = SBP, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
+p5.2 = ggplot(dat2, aes(x = SBP, y = log_antibody)) + 
+  geom_point(alpha = 0.2, size = 0.5) + 
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-ggplot(dat2, aes(x = LDL, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
+p6.2 = ggplot(dat2, aes(x = LDL, y = log_antibody)) + 
+  geom_point(alpha = 0.2, size = 0.5) + 
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-ggplot(dat2, aes(x = time, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
+p7.2 = ggplot(dat2, aes(x = time, y = log_antibody)) + 
+  geom_point(alpha = 0.2, size = 0.5) + 
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
+
+(p1.2 | p2.2 | p3.2) / (p4.2 | p5.2 | p6.2) / p7.2
 ```
 
+```{r, echo=FALSE}
 ### Assessing lineraity of Dat1
-```{r}
-data(dat1)
 x = model.matrix(log_antibody ~ ., dat1)
 y = dat1$log_antibody
 
@@ -206,8 +248,11 @@ featurePlot(x[, -c(5, 7)], y, plot = "scatter", labels = c("", "Y"),
 type = c("p"), layout = c(3, 2))
 ```
 
+The exploration and evaluation of \textbf{dat1} is used to help build a prediction model specific ally using GAM to understand how demographic and clinical factors influence antibody responses and how antibody levels change over time following vaccination. Considering the researcher collects a new and independent dataset, \textbf{dat2}, we discover the correlation between \textbf{time} and \textbf{log_antibody} is stronger than in \textbf{dat1} and similarly has weak linear relationships with most covariates. \textbf{Dat2} allows us to evaluate the robustness and generalizability of our prediction model. 
+
+# Model Trainging 
+```{r, echo=FALSE}
 ### Creating factors for the Race and Smoking variables to use in the model--for Dat1
-```{r}
 dat1$race = factor(dat1$race, 
                          levels = c(1, 2, 3, 4), 
                          labels = c("White", "Asian", "Black", "Hispanic"))
@@ -220,8 +265,8 @@ dat1$race = relevel(dat1$race, ref = "White")
 dat1$smoking = relevel(dat1$smoking, ref = "Never")
 ```
 
+```{r, echo=FALSE}
 ### Generalized Additive Model (GAM)--Using Dat1 data
-```{r}
 set.seed(2)
 
 gam.m1 = gam(log_antibody ~ age + gender + race + smoking + height + weight + bmi + diabetes + hypertension + SBP + LDL + time,
@@ -236,16 +281,16 @@ data = dat1)
 anova(gam.m1, gam.m2, gam.m3, test = "F")
 ```
 
-```{r}
+```{r, echo=FALSE}
 plot(gam.m2)
 ```
 
-```{r}
+```{r, echo=FALSE}
 vis.gam(gam.m3, view = c("height","weight"),
 color = "topo")
 ```
 
-```{r}
+```{r, echo=FALSE}
 ctrl1 = trainControl(method = "cv", number = 10)
 x = dat1[, c("age", "gender", "race", "smoking", "height", "weight", "bmi", 
               "diabetes", "hypertension", "SBP", "LDL", "time")]
@@ -259,9 +304,8 @@ gam.fit$bestTune
 gam.fit$finalModel
 ```
 
+```{r, echo=FALSE}
 ### Assessing lineraity of Dat2
-```{r}
-data(dat2)
 x = model.matrix(log_antibody ~ ., dat2)
 y = dat2$log_antibody
 
@@ -278,8 +322,8 @@ featurePlot(x[, -c(5, 7)], y, plot = "scatter", labels = c("", "Y"),
 type = c("p"), layout = c(3, 2))
 ```
 
+```{r, echo=FALSE}
 ### Creating factors for the Race and Smoking variables to use in the model--for Dat2
-```{r}
 dat2$race = factor(dat2$race, 
                          levels = c(1, 2, 3, 4), 
                          labels = c("White", "Asian", "Black", "Hispanic"))
@@ -292,8 +336,8 @@ dat2$race = relevel(dat2$race, ref = "White")
 dat2$smoking = relevel(dat2$smoking, ref = "Never")
 ```
 
+```{r, echo=FALSE}
 ### Generalized Additive Model (GAM)--Using Dat2 data
-```{r}
 set.seed(2)
 
 gam.m1 = gam(log_antibody ~ age + gender + race + smoking + height + weight + bmi + diabetes + hypertension + SBP + LDL + time,
@@ -308,16 +352,17 @@ data = dat2)
 anova(gam.m1, gam.m2, gam.m3, test = "F")
 ```
 
-```{r}
+```{r, echo=FALSE}
 plot(gam.m2)
 ```
 
-```{r}
+```{r, echo=FALSE}
 vis.gam(gam.m3, view = c("height","weight"),
 color = "topo")
 ```
 
-```{r}
+# Final Model 
+```{r, echo=FALSE}
 ctrl1 = trainControl(method = "cv", number = 10)
 x = dat1[, c("age", "gender", "race", "smoking", "height", "weight", "bmi", 
               "diabetes", "hypertension", "SBP", "LDL", "time")]
