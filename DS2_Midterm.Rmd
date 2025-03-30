@@ -1,8 +1,10 @@
 ---
 title: "Data Science 2 Midterm"
-Name: "Jasmin Martinez (JRM2319), Ixtaccihuatl Obregon, Elliot Kim"
-Date: "03/24/2025"
-output: pdf_document
+Name: Jasmin Martinez (JRM2319), Ixtaccihuatl Obregon, Elliot Kim
+Date: 03/24/2025
+output:
+  pdf_document: default
+  bookdown::pdf_document2: default
 ---
 
 ```{r, echo=FALSE}
@@ -26,7 +28,6 @@ library(bayesQR)
 library(patchwork)
 library(knitr)
 library(gratia)
-library(gridExtra)
   })
 })
 ```
@@ -34,15 +35,9 @@ library(gridExtra)
 # Exploratory Analysis
 For datasets **dat1** and **dat2** initial exploration of the data structure, descriptive statistics of continuous variables, correlation analysis, and various visualization techniques were conducted. 
 
-<<<<<<< HEAD
-Looking at \textbf{dat1}, the distribution of \textbf{$log_antibody$} is approximately normal, as seen in Figure \@ref(fig:d1-log-antibody-hist) and Figure \@ref(fig:d1-log-antibody-qq). High and low outliers can be observed in the Figure \@ref(fig:d1-log-antibody-box). Most covariates have weak or low correlation with each other. There is a high positive correlation between \textbf{bmi} and \textbf{weight} ($\rho = 0.72$) and a moderate negative correlation between \textbf{bmi} and \textbf{height} ($\rho = -0.50$). There is a mild negative correlation between \textbf{$log_antibody$} and \textbf{bmi} ($\rho = -0.23$), \textbf{weight} ($\rho = -0.17$), and \textbf{age} ($\rho = -0.15$). There is a mild positive correlation between \textbf{$log_antibody$} and \textbf{height} ($\rho = 0.10$). The correlation between \textbf{$log_antibody$} and \textbf{SBP} ($\rho = -0.06$), \textbf{LDL} ($\rho = -0.04$), and \textbf{time} ($\rho = -0.01$) are near zero, indicating no linear relationship. Linear relationships can be seen in Figure \@ref(fig:d1-log-antibody-lin).
-
-Exploring \textbf{dat2}, the distribution of \textbf{$log_antibody$} is also approximately normal, as shown Figure \@ref(fig:d2-log-antibody-hist) and Figure \@ref(fig:d2-log-antibody-qq). High and low outliers are again visible in the Figure \@ref(fig:d2-log-antibody-box). Most covariates exhibit weak or low correlation with each other. There is a high positive correlation between \textbf{bmi} and \textbf{weight} ($\rho = 0.72$) and a moderate negative correlation between \textbf{bmi} and \textbf{height} ($\rho = -0.53$). There is a mild negative correlation between \textbf{log_antibody} and \textbf{bmi} ($\rho = -0.16$), \textbf{weight} ($\rho = -0.11$), and \textbf{age} ($\rho = -0.08$). A mild positive correlation exists between \textbf{$log_antibody$} and \textbf{height} ($\rho = 0.08$). The correlations between \textbf{$log_antibody$} and \textbf{SBP} ($\rho = -0.01$), \textbf{LDL} ($\rho = -0.00$), and \textbf{time} ($\rho = -0.25$) are near zero or weak, again suggesting no strong linear relationship. Linear relationships can be seen in Figure \@ref(fig:d2-log-antibody-lin).
-=======
-Looking at **dat1**, the distribution of **log_antibody** is approximately normal, as seen in Figure \@ref(fig:d1-log-antibody-hist) and Figure \@ref(fig:d1-log-antibody-qq). High and low outliers can be observed in the Figure \ref{fig:d1-log-antibody-box}. Most covariates have weak or low correlation with each other. There is a high positive correlation between **bmi** and **weight** ($\rho = 0.72$) and a moderate negative correlation between **bmi** and **height** ($\rho = -0.50$). There is a mild negative correlation between **log_antibody** and **bmi** ($\rho = -0.23$), **weight** ($\rho = -0.17$), and **age** ($\rho = -0.15$). There is a mild positive correlation between **log_antibody** and **height** ($\rho = 0.10$). The correlation between **log_antibody** and **SBP** ($\rho = -0.06$), **LDL** ($\rho = -0.04$), and **time** ($\rho = -0.01$) are near zero, indicating no linear relationship. Linear relationships can be seen in Figure \@ref(fig:d1-log-antibody-lin).
+Looking at **dat1**, the distribution of **log_antibody** is approximately normal, as seen in Figure \@ref(fig:d1-log-antibody-hist) and Figure \@ref(fig:d1-log-antibody-qq). High and low outliers can be observed in the Figure \@ref(fig:d1-log-antibody-box). Most covariates have weak or low correlation with each other. There is a high positive correlation between **bmi** and **weight** ($\rho = 0.72$) and a moderate negative correlation between **bmi** and **height** ($\rho = -0.50$). There is a mild negative correlation between **log_antibody** and **bmi** ($\rho = -0.23$), **weight** ($\rho = -0.17$), and **age** ($\rho = -0.15$). There is a mild positive correlation between **log_antibody** and **height** ($\rho = 0.10$). The correlation between **log_antibody** and **SBP** ($\rho = -0.06$), **LDL** ($\rho = -0.04$), and **time** ($\rho = -0.01$) are near zero, indicating no linear relationship. Linear relationships can be seen in Figure \@ref(fig:d1-log-antibody-lin).
 
 Exploring **dat2**, the distribution of **log_antibody** is also approximately normal, as shown Figure \@ref(fig:d2-log-antibody-hist) and Figure \@ref(fig:d2-log-antibody-qq). High and low outliers are again visible in the Figure \@ref(fig:d2-log-antibody-box). Most covariates exhibit weak or low correlation with each other. There is a high positive correlation between **bmi** and **weight** ($\rho = 0.72$) and a moderate negative correlation between **bmi} and **height} ($\rho = -0.53$). There is a mild negative correlation between **log_antibody** and **bmi** ($\rho = -0.16$), **weight** ($\rho = -0.11$), and **age** ($\rho = -0.08$). A mild positive correlation exists between **log_antibody** and **height** ($\rho = 0.084$). The correlations between **log_antibody** and **SBP** ($\rho = -0.01$), **LDL** ($\rho = -0.00$), and **time** ($\rho = -0.25$) are near zero or weak, again suggesting no strong linear relationship. Linear relationships can be seen in Figure \@ref(fig:d2-log-antibody-lin).
->>>>>>> f5e371ff37c9e841cbcaba1343c15e0de86916ee
 
 
 ```{R, eval= FALSE, echo=FALSE}
@@ -151,8 +146,7 @@ p7 = ggplot(dat1, aes(x = time, y = log_antibody)) +
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-dat1_combinedplots = (p1 | p2 | p3) / (p4 | p5 | p6) / p7
-print(dat1_combinedplots)
+(p1 | p2 | p3) / (p4 | p5 | p6) / p7
 ```
 
 ```{R, eval=FALSE, echo=FALSE}
@@ -243,7 +237,7 @@ p7.2 = ggplot(dat2, aes(x = time, y = log_antibody)) +
   geom_smooth(method = "lm", col = "blue") + 
   theme_minimal()
 
-grid.arrange(p1.2, p2.2, p3.2, p4.2, p5.2, p6.2, p7.2, ncol = 3)
+(p1.2 | p2.2 | p3.2) / (p4.2 | p5.2 | p6.2) / p7.2
 ```
 
 ```{r, fig.width=4, fig.height=3, out.width='80%', fig.align='center',echo=FALSE}
@@ -451,11 +445,5 @@ p3.dx = ggplot(predict_table_d2, aes(x = residual)) +
 p1.dx + p2.dx / p3.dx
 ```
 
-<<<<<<< HEAD
-The prediction model's robustness and generalizability is mostly acceptable for \textbf{dat2}. Prediction accuracy was determined by the mean squared error (MSE) at 0.325 showing a low average on unseen data. The prediction model shows model stability with generalized cross-validation (GCV) score of 0.279. Looking at \@ref(fig:dx-plots) we evaluate Predicted vs Actual log_antibody Levels, Residuals vs Predicted, and the Distribution of Residuals. Predictions are mostly aligned with the observed values especially in the 9.5-10.5 predicted range. There is mild under-prediction below value 9, which indicates that the model may tend to underestimate lower antibody levels but perform well in the 9.5-10.5 predicted range. The predicted vs residual plot shows residuals mostly centered and near 0, suggesting that there is no significant bias in the model's predictions. Right-skewness can be observed in the predicted vs residual plots, which could suggest some non-linearity. The distribution of residuals looks approximately normal and does not have extreme outliers or multi-modality. 
-=======
 The prediction model's robustness and generalizability is mostly acceptable for **dat2**. Prediction accuracy was determined by the mean squared error (MSE) at 0.325 showing a low average on unseen data. The prediction model shows model stability with generalized cross-validation (GCV) score of 0.279. Looking at \@ref(fig:dx-plots) we evaluate Predicted vs Actual log_antibody Levels, Residuals vs Predicted, and the Distribution of Residuals. Predictions are mostly aligned with the observed values especially in the 9.5-10.5 predicted range. There is mild under-prediction below value 9, which indicates that the model may tend to underestimate lower antibody levels but perform well in the 9.5-10.5 predicted range. The predicted vs residual plot shows residuals mostly centered and near 0. Right-skewness can be observed in the predicted vs residual plots, which could suggest some non-linearity. The distribution of residuals looks approximately normal and does not have extreme outliers or multi-modality. 
->>>>>>> f5e371ff37c9e841cbcaba1343c15e0de86916ee
-
-
 
