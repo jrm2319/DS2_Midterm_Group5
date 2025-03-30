@@ -2,9 +2,8 @@
 title: "Data Science 2 Midterm"
 Name: Jasmin Martinez (JRM2319), Ixtaccihuatl Obregon, Elliot Kim
 Date: 03/24/2025
-output:
-  bookdown::pdf_document2: default
-  pdf_document: default
+output: 
+bookdown::pdf_document2: default
 ---
 
 ```{r, echo=FALSE}
@@ -48,7 +47,9 @@ The GAM models were then fitted. The first model, gam.m1, is a standard linear m
 
 The three GAM models were then compared using an ANOVA test that provides the f-test; this was used to determine which model provides the best fit. Cross-validation for GAM tuning was then conducted using a 10-fold cross-validation to tune to GAM model. The best hyperparameters and the final fitted model were then retrieved. The same model training procedure was used with the new, independent dataset, dat2.
 
+# Final Model Results 
 The prediction model's robustness and generalizability is mostly acceptable for **dat2**. Prediction accuracy was determined by the mean squared error (MSE) at 0.325 showing a low average on unseen data. The prediction model shows model stability with generalized cross-validation (GCV) score of 0.279. Looking at \@ref(fig:dx-plots) we evaluate Predicted vs Actual log_antibody Levels, Residuals vs Predicted, and the Distribution of Residuals. Predictions are mostly aligned with the observed values especially in the 9.5-10.5 predicted range. There is mild under-prediction below value 9, which indicates that the model may tend to underestimate lower antibody levels but perform well in the 9.5-10.5 predicted range. The predicted vs residual plot shows residuals mostly centered and near 0. Right-skewness can be observed in the predicted vs residual plots, which could suggest some non-linearity. The distribution of residuals looks approximately normal and does not have extreme outliers or multi-modality. 
+
 
 ```{R, eval= FALSE, echo=FALSE}
 ### Understanding linearity of variables in dat1:
@@ -118,6 +119,8 @@ summary(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_an
 ## Assess correlation among continuous variables
 cor(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
 ```
+
+\newpage
 
 ```{R d1-log-antibody-lin, fig.cap="Linearity between log\\_antibody levels and covariates for dat1", message=FALSE, echo=FALSE}
 ## Assess relationship between log_antibody and continuous variables
@@ -359,7 +362,7 @@ dat2$race = relevel(dat2$race, ref = "White")
 dat2$smoking = relevel(dat2$smoking, ref = "Never")
 ```
 
-```{r d2-anova-table, fig.cap="ANOVA Comparison of GAM Models (Dat2)", echo=FALSE}
+```{r d2-anova-table, fig.cap="ANOVA Comparison of GAM Models (Dat2)", echo=FALSE, float = FALSE}
 ### Generalized Additive Model (GAM)--Using Dat2 data
 set.seed(2)
 
@@ -392,7 +395,6 @@ vis.gam(gam.m3, view = c("height","weight"),
 color = "topo")
 ```
 
-# Final Model Results 
 ```{r, echo=FALSE}
 # Model on Dataset 1
 ctrl1 = trainControl(method = "cv", number = 10)
@@ -446,5 +448,4 @@ p3.dx = ggplot(predict_table_d2, aes(x = residual)) +
 
 p1.dx + p2.dx / p3.dx
 ```
-
 
