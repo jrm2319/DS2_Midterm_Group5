@@ -1,8 +1,8 @@
 ---
 title: "Data Science 2 Midterm"
-output: github_document
-Name: Jasmin Martinez (JRM2319), Ixtaccihuatl Obregon, Elliot Kim
-Date: 03/24/2025
+Name: "Jasmin Martinez (JRM2319), Ixtaccihuatl Obregon, Elliot Kim"
+Date: "03/24/2025"
+output: pdf_document
 ---
 
 ```{r, echo=FALSE}
@@ -12,6 +12,8 @@ load("dat2.RData")
 ```
 
 ```{r, echo=FALSE}
+suppressWarnings({
+  suppressPackageStartupMessages({
 library(caret)
 library(tidymodels)
 library(splines)
@@ -24,22 +26,27 @@ library(bayesQR)
 library(patchwork)
 library(knitr)
 library(gratia)
+  })
+})
 ```
 
 # Exploratory Analysis
-For datasets \textbf{dat1} and \textbf{dat2} initial exploration of the data structure, descriptive statistics of continuous variables, correlation analysis, and various visualization techniques were conducted. 
+For datasets **dat1** and **dat2** initial exploration of the data structure, descriptive statistics of continuous variables, correlation analysis, and various visualization techniques were conducted. 
 
-Looking at \textbf{dat1}, the distribution of \textbf{log_antibody} is approximately normal, as seen in Figure \@ref(fig:d1-log-antibody-hist) and Figure \@ref(fig:d1-log-antibody-qq). High and low outliers can be observed in the Figure \@ref(fig:d1-log-antibody-box). Most covariates have weak or low correlation with each other. There is a high positive correlation between \textbf{bmi} and \textbf{weight} ($\rho = 0.72$) and a moderate negative correlation between \textbf{bmi} and \textbf{height} ($\rho = -0.50$). There is a mild negative correlation between \textbf{log_antibody} and \textbf{bmi} ($\rho = -0.23$), \textbf{weight} ($\rho = -0.17$), and \textbf{age} ($\rho = -0.15$). There is a mild positive correlation between \textbf{log_antibody} and \textbf{height} ($\rho = 0.10$). The correlation between \textbf{log_antibody} and \textbf{SBP} ($\rho = -0.06$), \textbf{LDL} ($\rho = -0.04$), and \textbf{time} ($\rho = -0.01$) are near zero, indicating no linear relationship. Linear relationships can be seen in Figure \@ref(fig:d1-log-antibody-lin).
+Looking at **dat1**, the distribution of **log_antibody** is approximately normal, as seen in Figure \@ref(fig:d1-log-antibody-hist) and Figure \@ref(fig:d1-log-antibody-qq). High and low outliers can be observed in the Figure \@ref(fig:d1-log-antibody-box). Most covariates have weak or low correlation with each other. There is a high positive correlation between **bmi** and **weight** ($\rho = 0.72$) and a moderate negative correlation between **bmi** and **height** ($\rho = -0.50$). There is a mild negative correlation between **log_antibody** and **bmi** ($\rho = -0.23$), **weight** ($\rho = -0.17$), and **age** ($\rho = -0.15$). There is a mild positive correlation between **log_antibody** and **height** ($\rho = 0.10$). The correlation between **log_antibody** and **SBP** ($\rho = -0.06$), **LDL** ($\rho = -0.04$), and **time** ($\rho = -0.01$) are near zero, indicating no linear relationship. Linear relationships can be seen in Figure \@ref(fig:d1-log-antibody-lin).
 
-Exploring \textbf{dat2}, the distribution of \textbf{log_antibody} is also approximately normal, as shown Figure \@ref(fig:d2-log-antibody-hist) and Figure \@ref(fig:d2-log-antibody-qq). High and low outliers are again visible in the Figure \@ref(fig:d2-log-antibody-box). Most covariates exhibit weak or low correlation with each other. There is a high positive correlation between \textbf{bmi} and \textbf{weight} ($\rho = 0.72$) and a moderate negative correlation between \textbf{bmi} and \textbf{height} ($\rho = -0.53$). There is a mild negative correlation between \textbf{log_antibody} and \textbf{bmi} ($\rho = -0.16$), \textbf{weight} ($\rho = -0.11$), and \textbf{age} ($\rho = -0.08$). A mild positive correlation exists between \textbf{log_antibody} and \textbf{height} ($\rho = 0.08$). The correlations between \textbf{log_antibody} and \textbf{SBP} ($\rho = -0.01$), \textbf{LDL} ($\rho = -0.00$), and \textbf{time} ($\rho = -0.25$) are near zero or weak, again suggesting no strong linear relationship. Linear relationships can be seen in Figure \@ref(fig:d2-log-antibody-lin).
+Exploring **dat2**, the distribution of **log_antibody** is also approximately normal, as shown Figure \@ref(fig:d2-log-antibody-hist) and Figure \@ref(fig:d2-log-antibody-qq). High and low outliers are again visible in the Figure \@ref(fig:d2-log-antibody-box). Most covariates exhibit weak or low correlation with each other. There is a high positive correlation between **bmi** and **weight** ($\rho = 0.72$) and a moderate negative correlation between **bmi} and **height} ($\rho = -0.53$). There is a mild negative correlation between **log_antibody** and **bmi** ($\rho = -0.16$), **weight** ($\rho = -0.11$), and **age** ($\rho = -0.08$). A mild positive correlation exists between **log_antibody** and **height** ($\rho = 0.084$). The correlations between **log_antibody** and **SBP** ($\rho = -0.01$), **LDL** ($\rho = -0.00$), and **time** ($\rho = -0.25$) are near zero or weak, again suggesting no strong linear relationship. Linear relationships can be seen in Figure \@ref(fig:d2-log-antibody-lin).
 
 
-```{R, echo=FALSE}
+```{R, eval= FALSE, echo=FALSE}
 ### Understanding linearity of variables in dat1:
 ## Observe first couple rows
 head(dat1)
 str(dat1)
 summary(dat1)
+```
+
+```{r, message = FALSE, echo=FALSE}
 dat1 |>  
   select(where(is.numeric)) |>
   summarise(across(everything(), list(
@@ -56,17 +63,18 @@ dat1 |>
   pivot_wider(names_from = Stat, values_from = value) |>
   kable(caption = "Clean Summary Statistics for Numeric Variables")
 ```
-```{r, echo=FALSE}
+
+```{r, eval=FALSE, echo=FALSE}
 ## Check for missing values
 colSums(is.na(dat1))
 ```
 
-```{r, echo=FALSE}
+```{r, eval=FALSE, echo=FALSE}
 ## Check for duplicates
 sum(duplicated(dat1))
 ```
 
-```{r d1-log-antibody-hist, fig.cap="Histogram of log_antibody levels for dat1", echo=FALSE}
+```{r d1-log-antibody-hist, fig.cap="Histogram of log\\_antibody levels for dat1", fig.width=4, fig.height=3, out.width='33%', fig.align='center', echo=FALSE}
 ## Histogram for distribution of log-transformed antibody levels 
 ggplot(dat1, aes(x = log_antibody)) + 
   geom_histogram(bins = 30, fill = "green", alpha = 0.5) + 
@@ -76,30 +84,30 @@ ggplot(dat1, aes(x = log_antibody)) +
        y = "Frequency")
 ```
 
-```{r d1-log-antibody-qq, fig.cap="Q-Q plot of log_antibody levels for dat1", echo=FALSE}
+```{r d1-log-antibody-qq, fig.cap="Q-Q plot of log\\_antibody levels for dat1", fig.width=4, fig.height=3, out.width='33%', fig.align='center', echo=FALSE}
 # Q-Q plot
 qqnorm(dat1$log_antibody)
 qqline(dat1$log_antibody, col = "blue")
 ```
 
-```{r d1-log-antibody-box, fig.cap="Boxplot of log_antibody levels for dat1", echo=FALSE}
+```{r d1-log-antibody-box, fig.cap="Boxplot of log\\_antibody levels for dat1", fig.width=4, fig.height=3, out.width='33%', fig.align='center', echo=FALSE}
 ## Assess outliers
 ggplot(dat1, aes(y = log_antibody)) +
   geom_boxplot(fill = "blue", alpha = 0.5) + 
   theme_minimal()
 ```
 
-```{r, echo=FALSE}
+```{r, eval=FALSE, echo=FALSE}
 ## Summarize continuous variables
 summary(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
 ```
 
-```{R, echo=FALSE}
+```{R, eval=FALSE, echo=FALSE}
 ## Assess correlation among continuous variables
 cor(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
 ```
 
-```{R d1-log-antibody-lin, fig.cap="Linearity between log_antibody levels and covariates for dat1", echo=FALSE}
+```{R d1-log-antibody-lin, fig.cap="Linearity between log\\_antibody levels and covariates for dat1", message=FALSE, echo=FALSE}
 ## Assess relationship between log_antibody and continuous variables
 p1 = ggplot(dat1, aes(x = age, y = log_antibody)) + 
   geom_point(alpha = 0.2, size = 0.5) + 
@@ -139,7 +147,7 @@ p7 = ggplot(dat1, aes(x = time, y = log_antibody)) +
 (p1 | p2 | p3) / (p4 | p5 | p6) / p7
 ```
 
-```{R, echo=FALSE}
+```{R, eval=FALSE, echo=FALSE}
 ## Repeat for dat2
 ## Observe first couple rows
 head(dat2)
@@ -147,17 +155,17 @@ str(dat2)
 summary(dat2)
 ```
 
-```{r, echo=FALSE}
+```{r, eval=FALSE, echo=FALSE}
 ## Check for missing values
 colSums(is.na(dat2))
 ```
 
-```{r, echo=FALSE}
+```{r, eval=FALSE, echo=FALSE}
 ## Check for duplicates
 sum(duplicated(dat2))
 ```
 
-```{r d2-log-antibody-hist, fig.cap="Histogram of log_antibody levels for dat2", echo=FALSE}
+```{r d2-log-antibody-hist, fig.cap="Histogram of log\\_antibody levels for dat2", fig.width=4, fig.height=3, out.width='33%', fig.align='center', echo=FALSE}
 ## Histogram for distribution of log-transformed antibody levels 
 ggplot(dat2, aes(x = log_antibody)) + 
   geom_histogram(bins = 30, fill = "green", alpha = 0.5) + 
@@ -167,30 +175,30 @@ ggplot(dat2, aes(x = log_antibody)) +
        y = "Frequency")
 ```
 
-```{r d2-log-antibody-qq, fig.cap="Q-Q plot of log_antibody levels for dat2", echo=FALSE}
+```{r d2-log-antibody-qq, fig.cap="Q-Q plot of log\\_antibody levels for dat2", fig.width=4, fig.height=3, out.width='33%', fig.align='center', echo=FALSE}
 # Q-Q plot
 qqnorm(dat2$log_antibody)
 qqline(dat2$log_antibody, col = "blue")
 ```
 
-```{r d2-log-antibody-box, fig.cap="Boxplot of log_antibody levels for dat2", echo=FALSE}
+```{r d2-log-antibody-box, fig.cap="Boxplot of log\\_antibody levels for dat2", fig.width=4, fig.height=3, out.width='33%', fig.align='center', echo=FALSE}
 ## Assess outliers
 ggplot(dat2, aes(y = log_antibody)) +
   geom_boxplot(fill = "blue", alpha = 0.5) + 
   theme_minimal()
 ```
 
-```{r, echo=FALSE}
+```{r, eval=FALSE, echo=FALSE}
 ## Summarize continuous variables
 summary(dat2[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
 ```
 
-```{R, echo=FALSE}
+```{R, message = FALSE, eval=FALSE, echo=FALSE}
 ## Assess correlation among continuous variables
 cor(dat2[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
 ```
 
-```{R d2-log-antibody-lin, fig.cap="Linearity between log_antibody levels and covariates for dat2", echo=FALSE}
+```{R d2-log-antibody-lin, fig.cap="Linearity between log\\_antibody levels and covariates for dat2", message = FALSE, echo=FALSE}
 ## Assess relationship between log_antibody and continuous variables
 p1.2 = ggplot(dat2, aes(x = age, y = log_antibody)) + 
   geom_point(alpha = 0.2, size = 0.5) + 
@@ -230,7 +238,7 @@ p7.2 = ggplot(dat2, aes(x = time, y = log_antibody)) +
 (p1.2 | p2.2 | p3.2) / (p4.2 | p5.2 | p6.2) / p7.2
 ```
 
-```{r, echo=FALSE}
+```{r, fig.width=4, fig.height=3, out.width='80%', fig.align='center',echo=FALSE}
 ### Assessing lineraity of Dat1
 x = model.matrix(log_antibody ~ ., dat1)
 y = dat1$log_antibody
@@ -248,7 +256,7 @@ featurePlot(x[, -c(5, 7)], y, plot = "scatter", labels = c("", "Y"),
 type = c("p"), layout = c(3, 2))
 ```
 
-The exploration and evaluation of \textbf{dat1} is used to help build a prediction model specific ally using GAM to understand how demographic and clinical factors influence antibody responses and how antibody levels change over time following vaccination. Considering the researcher collects a new and independent dataset, \textbf{dat2}, we discover the correlation between \textbf{time} and \textbf{log_antibody} is stronger than in \textbf{dat1} and similarly has weak linear relationships with most covariates. \textbf{Dat2} allows us to evaluate the robustness and generalizability of our prediction model. 
+The exploration and evaluation of **dat1** is used to help build a prediction model specific ally using GAM to understand how demographic and clinical factors influence antibody responses and how antibody levels change over time following vaccination. Considering the researcher collects a new and independent dataset, **dat2**, we discover the correlation between **time** and **log_antibody** is stronger than in **dat1** and similarly has weak linear relationships with most covariates. **Dat2** allows us to evaluate the robustness and generalizability of our prediction model. 
 
 # Model Trainging 
 A Generalized Additive Model (GAM) was created to model log-transformed antibody level. Predictors included age, gender, race, smoking, height, weight, BMI, diabetes, hypertension, SBP, LDL, and time since vaccination. To prepare the data for modeling, the model matrix, x, was created using the outcome and all predictors listed above and extracted the response variable, y. Given that race and smoking were categorical variables with multiple categories, some re-coding was necessary to use these variables in the model building. Therefore, race and smoking were converted into factor variables with “White” being the reference group for race and “Never” being the reference group for smoking. 
@@ -296,7 +304,7 @@ kable(anova_table, caption = "ANOVA Comparison of GAM Models (Dat1)")
 draw(gam.m2)
 ```
 
-```{r vis-gam, fig.cap="Visualization of Model 3 (dat1)", echo=FALSE}
+```{r vis-gam, fig.width=4, fig.height=3, out.width='90%', fig.align='center', fig.cap="Visualization of Model 3 (dat1)", echo=FALSE}
 vis.gam(gam.m3, view = c("height","weight"),
 color = "topo")
 ```
@@ -311,11 +319,11 @@ set.seed(2)
 gam.fit = train(x, y,
 method = "gam",
 trControl = ctrl1)
-gam.fit$bestTune
-gam.fit$finalModel
+tune = gam.fit$bestTune
+mod_score = gam.fit$finalModel
 ```
 
-```{r, echo=FALSE}
+```{r, fig.width=4, fig.height=3, out.width='80%', fig.align='center', echo=FALSE}
 ### Assessing linearity of Dat2
 x = model.matrix(log_antibody ~ ., dat2)
 y = dat2$log_antibody
@@ -375,7 +383,7 @@ Model 2 (gam.m2) was chosen to be the final model based on the improvements it m
 draw(gam.m2)
 ```
 
-```{r, echo=FALSE}
+```{r, fig.width=4, fig.height=3, out.width='90%', fig.align='center', echo=FALSE}
 vis.gam(gam.m3, view = c("height","weight"),
 color = "topo")
 ```
@@ -392,8 +400,8 @@ set.seed(2)
 gam.fit = train(x, y,
 method = "gam",
 trControl = ctrl1)
-gam.fit$bestTune
-gam.fit$finalModel
+tune = gam.fit$bestTune
+mod_score = gam.fit$finalModel
 
 # Model on Dataset 2
 x_test = dat2[, c("age", "gender", "race", "smoking", "height", "weight", "bmi",
@@ -401,8 +409,7 @@ x_test = dat2[, c("age", "gender", "race", "smoking", "height", "weight", "bmi",
 y_test = dat2$log_antibody
 predictions = predict(gam.fit$finalModel, newdata = dat2)
 mse = mean((predictions- dat2$log_antibody)^2)
-#r2 = 1 - sum(predictions$residual^2) / sum((y_test - mean(y_test))^2)
-cat("MSE:", format(mse, nsmall = 3), "\n")
+#cat("MSE:", format(mse, nsmall = 3), "\n")
 
 predict_table_d2 = tibble(
   fitted = predictions,
@@ -436,7 +443,7 @@ p3.dx = ggplot(predict_table_d2, aes(x = residual)) +
 p1.dx + p2.dx / p3.dx
 ```
 
-The prediction model's robustness and generalizability is mostly acceptable for \textbf{dat2}. Prediction accuracy was determined by the mean squared error (MSE) at 0.325 showing a low average on unseen data. prediction model shows model stability with generalized cross-validation (GCV) score of 0.279. The Looking at \@ref(fig:dx-plots) we evaluate Predicted vs Actual log_antibody Levels, Residuals vs Predicted, and the Distribution of Residuals. Predictions are mostly aligned with the observed values especially in the 9.5-10.5 predicted range. There is mild under-prediction below value 9. The predicted vs residual plot shows residuals mostly centered and near 0. Right-skewness can be observed in the predicted vs residual plots, which could suggest some non-linearity. The distribution of residuals looks approximately normal and does not have extreme outliers or multi-modality. 
+The prediction model's robustness and generalizability is mostly acceptable for **dat2**. Prediction accuracy was determined by the mean squared error (MSE) at 0.325 showing a low average on unseen data. prediction model shows model stability with generalized cross-validation (GCV) score of 0.279. The Looking at \@ref(fig:dx-plots) we evaluate Predicted vs Actual log_antibody Levels, Residuals vs Predicted, and the Distribution of Residuals. Predictions are mostly aligned with the observed values especially in the 9.5-10.5 predicted range. There is mild under-prediction below value 9. The predicted vs residual plot shows residuals mostly centered and near 0. Right-skewness can be observed in the predicted vs residual plots, which could suggest some non-linearity. The distribution of residuals looks approximately normal and does not have extreme outliers or multi-modality. 
 
 
 

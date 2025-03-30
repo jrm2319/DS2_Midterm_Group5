@@ -1,36 +1,19 @@
 Data Science 2 Midterm
 ================
 
-### Loading Data
-
-``` r
-load("dat1.RData")
-load("dat2.RData")
-```
-
-### Understanding linearity of variables in dat1:
-
-``` r
-library(caret)
-```
-
     ## Loading required package: ggplot2
 
     ## Loading required package: lattice
 
-``` r
-library(tidymodels)
-```
-
-    ## ── Attaching packages ────────────────────────────────────── tidymodels 1.3.0 ──
+    ## ── Attaching packages ────────────────────────────────────── tidymodels 1.2.0 ──
 
     ## ✔ broom        1.0.7     ✔ rsample      1.2.1
     ## ✔ dials        1.4.0     ✔ tibble       3.2.1
     ## ✔ dplyr        1.1.4     ✔ tidyr        1.3.1
-    ## ✔ infer        1.0.7     ✔ tune         1.3.0
-    ## ✔ modeldata    1.4.0     ✔ workflows    1.2.0
+    ## ✔ infer        1.0.7     ✔ tune         1.2.1
+    ## ✔ modeldata    1.4.0     ✔ workflows    1.1.4
     ## ✔ parsnip      1.3.0     ✔ workflowsets 1.1.0
-    ## ✔ purrr        1.0.4     ✔ yardstick    1.3.2
+    ## ✔ purrr        1.0.2     ✔ yardstick    1.3.2
     ## ✔ recipes      1.1.1
 
     ## ── Conflicts ───────────────────────────────────────── tidymodels_conflicts() ──
@@ -43,11 +26,7 @@ library(tidymodels)
     ## ✖ yardstick::sensitivity() masks caret::sensitivity()
     ## ✖ yardstick::specificity() masks caret::specificity()
     ## ✖ recipes::step()          masks stats::step()
-
-``` r
-library(splines)
-library(mgcv)
-```
+    ## • Search for functions across packages at https://www.tidymodels.org/find/
 
     ## Loading required package: nlme
 
@@ -60,20 +39,12 @@ library(mgcv)
 
     ## This is mgcv 1.9-1. For overview type 'help("mgcv-package")'.
 
-``` r
-library(pdp)
-```
-
     ## 
     ## Attaching package: 'pdp'
 
     ## The following object is masked from 'package:purrr':
     ## 
     ##     partial
-
-``` r
-library(earth)
-```
 
     ## Loading required package: Formula
 
@@ -88,14 +59,9 @@ library(earth)
     ## 
     ##     rescale
 
-``` r
-library(tidyverse)
-```
-
     ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
     ## ✔ forcats   1.0.0     ✔ readr     2.1.5
-    ## ✔ lubridate 1.9.3     ✔ stringr   1.5.1
-
+    ## ✔ lubridate 1.9.4     ✔ stringr   1.5.1
     ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ readr::col_factor() masks scales::col_factor()
     ## ✖ nlme::collapse()    masks dplyr::collapse()
@@ -107,17 +73,56 @@ library(tidyverse)
     ## ✖ pdp::partial()      masks purrr::partial()
     ## ✖ readr::spec()       masks yardstick::spec()
     ## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+    ## 
+    ## Attaching package: 'gratia'
+    ## 
+    ## 
+    ## The following object is masked from 'package:stringr':
+    ## 
+    ##     boundary
+    ## 
+    ## 
+    ## The following object is masked from 'package:plotrix':
+    ## 
+    ##     dispersion
+    ## 
+    ## 
+    ## The following object is masked from 'package:dials':
+    ## 
+    ##     penalty
 
-``` r
-library(ggplot2)
-library(bayesQR) 
-```
+# Exploratory Analysis
 
-## Observe first couple rows
+For datasets and initial exploration of the data structure, descriptive
+statistics of continuous variables, correlation analysis, and various
+visualization techniques were conducted.
 
-``` r
-head(dat1)
-```
+Looking at , the distribution of is approximately normal, as seen in
+Figure @ref(fig:d1-log-antibody-hist) and Figure
+@ref(fig:d1-log-antibody-qq). High and low outliers can be observed in
+the Figure @ref(fig:d1-log-antibody-box). Most covariates have weak or
+low correlation with each other. There is a high positive correlation
+between and ($\rho = 0.72$) and a moderate negative correlation between
+and ($\rho = -0.50$). There is a mild negative correlation between and
+($\rho = -0.23$), ($\rho = -0.17$), and ($\rho = -0.15$). There is a
+mild positive correlation between and ($\rho = 0.10$). The correlation
+between and ($\rho = -0.06$), ($\rho = -0.04$), and ($\rho = -0.01$) are
+near zero, indicating no linear relationship. Linear relationships can
+be seen in Figure @ref(fig:d1-log-antibody-lin).
+
+Exploring , the distribution of is also approximately normal, as shown
+Figure @ref(fig:d2-log-antibody-hist) and Figure
+@ref(fig:d2-log-antibody-qq). High and low outliers are again visible in
+the Figure @ref(fig:d2-log-antibody-box). Most covariates exhibit weak
+or low correlation with each other. There is a high positive correlation
+between and ($\rho = 0.72$) and a moderate negative correlation between
+and ($\rho = -0.53$). There is a mild negative correlation between and
+($\rho = -0.16$), ($\rho = -0.11$), and ($\rho = -0.08$). A mild
+positive correlation exists between and ($\rho = 0.08$). The
+correlations between and ($\rho = -0.01$), ($\rho = -0.00$), and
+($\rho = -0.25$) are near zero or weak, again suggesting no strong
+linear relationship. Linear relationships can be seen in Figure
+@ref(fig:d2-log-antibody-lin).
 
     ##   id age gender race smoking height weight  bmi diabetes hypertension SBP LDL
     ## 1  1  50      0    1       0  176.1   68.3 22.0        0            0 130  82
@@ -134,10 +139,6 @@ head(dat1)
     ## 5  193     9.563081
     ## 6  143     8.837763
 
-``` r
-str(dat1)
-```
-
     ## 'data.frame':    5000 obs. of  14 variables:
     ##  $ id          : int  1 2 3 4 5 6 7 8 9 10 ...
     ##  $ age         : num  50 71 58 63 56 59 67 62 60 64 ...
@@ -153,10 +154,6 @@ str(dat1)
     ##  $ LDL         : num  82 129 101 93 97 108 89 96 120 135 ...
     ##  $ time        : num  76 82 168 105 193 143 63 78 61 88 ...
     ##  $ log_antibody: num  10.65 9.89 10.9 9.91 9.56 ...
-
-``` r
-summary(dat1)
-```
 
     ##        id            age            gender       race     smoking 
     ##  Min.   :   1   Min.   :44.00   Min.   :0.0000   1:3221   0:3010  
@@ -187,11 +184,25 @@ summary(dat1)
     ##  3rd Qu.:10.478  
     ##  Max.   :11.961
 
-## Check for missing values
+    ## Warning: Expected 2 pieces. Additional pieces discarded in 6 rows [67, 68, 69, 70, 71,
+    ## 72].
 
-``` r
-colSums(is.na(dat1))
-```
+| Variable | Min | Q1 | Median | Mean | Q3 | Max |
+|:---|---:|---:|---:|---:|---:|---:|
+| id | 1.000000 | 1250.750000 | 2500.50000 | 2500.50000 | 3750.25000 | 5000.00000 |
+| age | 44.000000 | 57.000000 | 60.00000 | 59.96840 | 63.00000 | 75.00000 |
+| gender | 0.000000 | 0.000000 | 0.00000 | 0.48540 | 1.00000 | 1.00000 |
+| height | 150.200000 | 166.100000 | 170.10000 | 170.12634 | 174.22500 | 192.90000 |
+| weight | 56.700000 | 75.400000 | 80.10000 | 80.10908 | 84.90000 | 106.00000 |
+| bmi | 18.200000 | 25.800000 | 27.60000 | 27.74040 | 29.50000 | 38.80000 |
+| diabetes | 0.000000 | 0.000000 | 0.00000 | 0.15440 | 0.00000 | 1.00000 |
+| hypertension | 0.000000 | 0.000000 | 0.00000 | 0.45960 | 1.00000 | 1.00000 |
+| SBP | 101.000000 | 124.000000 | 130.00000 | 129.90040 | 135.00000 | 155.00000 |
+| LDL | 43.000000 | 96.000000 | 110.00000 | 109.90860 | 124.00000 | 185.00000 |
+| time | 30.000000 | 76.000000 | 106.00000 | 108.86260 | 138.00000 | 270.00000 |
+| log | 7.765405 | 9.681635 | 10.08908 | 10.06434 | 10.47758 | 11.96137 |
+
+Clean Summary Statistics for Numeric Variables
 
     ##           id          age       gender         race      smoking       height 
     ##            0            0            0            0            0            0 
@@ -200,41 +211,28 @@ colSums(is.na(dat1))
     ##         time log_antibody 
     ##            0            0
 
-## Check for duplicates
-
-``` r
-sum(duplicated(dat1))
-```
-
     ## [1] 0
 
-## Histogram for distribution of log-transformed antibody levels
+<figure>
+<img src="DS2_Midterm_files/figure-gfm/d1-log-antibody-hist-1.png"
+alt="Histogram of log_antibody levels for dat1" />
+<figcaption aria-hidden="true">Histogram of log_antibody levels for
+dat1</figcaption>
+</figure>
 
-``` r
-ggplot(dat1, aes(x = log_antibody)) + 
-  geom_histogram(bins = 30, fill = "green", alpha = 0.5) + 
-  theme_minimal() + 
-  labs(title = "Distribution of Log-Antibody Levels",
-       x = "Log-Antibody Level",
-       y = "Frequency")
-```
+<figure>
+<img src="DS2_Midterm_files/figure-gfm/d1-log-antibody-qq-1.png"
+alt="Q-Q plot of log_antibody levels for dat1" />
+<figcaption aria-hidden="true">Q-Q plot of log_antibody levels for
+dat1</figcaption>
+</figure>
 
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-6-1.png)<!-- --> \##
-Assess outliers
-
-``` r
-ggplot(dat1, aes(y = log_antibody)) +
-  geom_boxplot(fill = "blue", alpha = 0.5) + 
-  theme_minimal()
-```
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
-
-## Summarize continuous variables
-
-``` r
-summary(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
-```
+<figure>
+<img src="DS2_Midterm_files/figure-gfm/d1-log-antibody-box-1.png"
+alt="Boxplot of log_antibody levels for dat1" />
+<figcaption aria-hidden="true">Boxplot of log_antibody levels for
+dat1</figcaption>
+</figure>
 
     ##       age            height          weight            bmi       
     ##  Min.   :44.00   Min.   :150.2   Min.   : 56.70   Min.   :18.20  
@@ -250,12 +248,6 @@ summary(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_an
     ##  Mean   :129.9   Mean   :109.9   Mean   :108.9   Mean   :10.064  
     ##  3rd Qu.:135.0   3rd Qu.:124.0   3rd Qu.:138.0   3rd Qu.:10.478  
     ##  Max.   :155.0   Max.   :185.0   Max.   :270.0   Max.   :11.961
-
-## Assess correlation among continuous variables
-
-``` r
-cor(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
-```
 
     ##                       age       height       weight          bmi          SBP
     ## age           1.000000000 -0.006857166 -0.002514628  0.002260399  0.439919900
@@ -276,92 +268,20 @@ cor(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibo
     ## time         -0.01188132  1.000000000  -0.01384286
     ## log_antibody -0.03576689 -0.013842856   1.00000000
 
-## Assess relationship between log_antibody and continuous variables
-
-``` r
-ggplot(dat1, aes(x = age, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
-  geom_smooth(method = "lm", col = "blue") + 
-  theme_minimal()
-```
-
+    ## `geom_smooth()` using formula = 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
     ## `geom_smooth()` using formula = 'y ~ x'
 
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
-
-``` r
-ggplot(dat1, aes(x = height, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
-  geom_smooth(method = "lm", col = "blue") + 
-  theme_minimal()
-```
-
-    ## `geom_smooth()` using formula = 'y ~ x'
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-10-2.png)<!-- -->
-
-``` r
-ggplot(dat1, aes(x = weight, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
-  geom_smooth(method = "lm", col = "blue") + 
-  theme_minimal()
-```
-
-    ## `geom_smooth()` using formula = 'y ~ x'
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-10-3.png)<!-- -->
-
-``` r
-ggplot(dat1, aes(x = bmi, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
-  geom_smooth(method = "lm", col = "blue") + 
-  theme_minimal()
-```
-
-    ## `geom_smooth()` using formula = 'y ~ x'
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-10-4.png)<!-- -->
-
-``` r
-ggplot(dat1, aes(x = SBP, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
-  geom_smooth(method = "lm", col = "blue") + 
-  theme_minimal()
-```
-
-    ## `geom_smooth()` using formula = 'y ~ x'
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-10-5.png)<!-- -->
-
-``` r
-ggplot(dat1, aes(x = LDL, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
-  geom_smooth(method = "lm", col = "blue") + 
-  theme_minimal()
-```
-
-    ## `geom_smooth()` using formula = 'y ~ x'
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-10-6.png)<!-- -->
-
-``` r
-ggplot(dat1, aes(x = time, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
-  geom_smooth(method = "lm", col = "blue") + 
-  theme_minimal()
-```
-
-    ## `geom_smooth()` using formula = 'y ~ x'
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-10-7.png)<!-- -->
-
-## Repeat for dat2
-
-## Observe first couple rows
-
-``` r
-head(dat2)
-```
+<figure>
+<img src="DS2_Midterm_files/figure-gfm/d1-log-antibody-lin-1.png"
+alt="Linearity between log_antibody levels and covariates for dat1" />
+<figcaption aria-hidden="true">Linearity between log_antibody levels and
+covariates for dat1</figcaption>
+</figure>
 
     ##        id age gender race smoking height weight  bmi diabetes hypertension SBP
     ## 5001 5001  58      0    4       1  176.4   86.4 27.7        0            0 130
@@ -378,10 +298,6 @@ head(dat2)
     ## 5005 142  240     9.074990
     ## 5006 112  206    10.182070
 
-``` r
-str(dat2)
-```
-
     ## 'data.frame':    1000 obs. of  14 variables:
     ##  $ id          : int  5001 5002 5003 5004 5005 5006 5007 5008 5009 5010 ...
     ##  $ age         : num  58 62 71 59 69 56 65 61 62 68 ...
@@ -397,10 +313,6 @@ str(dat2)
     ##  $ LDL         : num  115 118 149 119 142 112 127 76 86 123 ...
     ##  $ time        : num  205 229 206 163 240 206 285 185 124 127 ...
     ##  $ log_antibody: num  9.81 9.08 10.43 9.83 9.07 ...
-
-``` r
-summary(dat2)
-```
 
     ##        id            age            gender      race    smoking     height     
     ##  Min.   :5001   Min.   :46.00   Min.   :0.000   1:663   0:601   Min.   :149.4  
@@ -424,12 +336,6 @@ summary(dat2)
     ##  3rd Qu.:135.0   3rd Qu.:124.0   3rd Qu.:205.0   3rd Qu.:10.315  
     ##  Max.   :156.0   Max.   :174.0   Max.   :330.0   Max.   :11.852
 
-## Check for missing values
-
-``` r
-colSums(is.na(dat2))
-```
-
     ##           id          age       gender         race      smoking       height 
     ##            0            0            0            0            0            0 
     ##       weight          bmi     diabetes hypertension          SBP          LDL 
@@ -437,41 +343,28 @@ colSums(is.na(dat2))
     ##         time log_antibody 
     ##            0            0
 
-## Check for duplicates
-
-``` r
-sum(duplicated(dat2))
-```
-
     ## [1] 0
 
-## Histogram for distribution of log-transformed antibody levels
+<figure>
+<img src="DS2_Midterm_files/figure-gfm/d2-log-antibody-hist-1.png"
+alt="Histogram of log_antibody levels for dat2" />
+<figcaption aria-hidden="true">Histogram of log_antibody levels for
+dat2</figcaption>
+</figure>
 
-``` r
-ggplot(dat2, aes(x = log_antibody)) + 
-  geom_histogram(bins = 30, fill = "green", alpha = 0.5) + 
-  theme_minimal() + 
-  labs(title = "Distribution of Log-Antibody Levels",
-       x = "Log-Antibody Level",
-       y = "Frequency")
-```
+<figure>
+<img src="DS2_Midterm_files/figure-gfm/d2-log-antibody-qq-1.png"
+alt="Q-Q plot of log_antibody levels for dat2" />
+<figcaption aria-hidden="true">Q-Q plot of log_antibody levels for
+dat2</figcaption>
+</figure>
 
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-14-1.png)<!-- --> \##
-Assess outliers
-
-``` r
-ggplot(dat2, aes(y = log_antibody)) +
-  geom_boxplot(fill = "blue", alpha = 0.5) + 
-  theme_minimal()
-```
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
-
-## Summarize continuous variables
-
-``` r
-summary(dat2[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
-```
+<figure>
+<img src="DS2_Midterm_files/figure-gfm/d2-log-antibody-box-1.png"
+alt="Boxplot of log_antibody levels for dat2" />
+<figcaption aria-hidden="true">Boxplot of log_antibody levels for
+dat2</figcaption>
+</figure>
 
     ##       age            height          weight            bmi       
     ##  Min.   :46.00   Min.   :149.4   Min.   : 58.80   Min.   :19.80  
@@ -487,12 +380,6 @@ summary(dat2[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_an
     ##  Mean   :129.6   Mean   :110.2   Mean   :173.8   Mean   : 9.897  
     ##  3rd Qu.:135.0   3rd Qu.:124.0   3rd Qu.:205.0   3rd Qu.:10.315  
     ##  Max.   :156.0   Max.   :174.0   Max.   :330.0   Max.   :11.852
-
-## Assess correlation among continuous variables
-
-``` r
-cor(dat2[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
-```
 
     ##                      age      height      weight           bmi         SBP
     ## age           1.00000000  0.01798237 -0.02463596 -0.0339202130  0.49930403
@@ -513,192 +400,121 @@ cor(dat2[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibo
     ## time          0.0404970331  1.00000000  -0.24812211
     ## log_antibody -0.0018648302 -0.24812211   1.00000000
 
-## Assess relationship between log_antibody and continuous variables
-
-``` r
-ggplot(dat2, aes(x = age, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
-  geom_smooth(method = "lm", col = "blue") + 
-  theme_minimal()
-```
-
     ## `geom_smooth()` using formula = 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
+
+<figure>
+<img src="DS2_Midterm_files/figure-gfm/d2-log-antibody-lin-1.png"
+alt="Linearity between log_antibody levels and covariates for dat2" />
+<figcaption aria-hidden="true">Linearity between log_antibody levels and
+covariates for dat2</figcaption>
+</figure>
+
+![](DS2_Midterm_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-13-2.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-13-3.png)<!-- -->
+
+The exploration and evaluation of is used to help build a prediction
+model specific ally using GAM to understand how demographic and clinical
+factors influence antibody responses and how antibody levels change over
+time following vaccination. Considering the researcher collects a new
+and independent dataset, , we discover the correlation between and is
+stronger than in and similarly has weak linear relationships with most
+covariates. allows us to evaluate the robustness and generalizability of
+our prediction model.
+
+# Model Trainging
+
+A Generalized Additive Model (GAM) was created to model log-transformed
+antibody level. Predictors included age, gender, race, smoking, height,
+weight, BMI, diabetes, hypertension, SBP, LDL, and time since
+vaccination. To prepare the data for modeling, the model matrix, x, was
+created using the outcome and all predictors listed above and extracted
+the response variable, y. Given that race and smoking were categorical
+variables with multiple categories, some re-coding was necessary to use
+these variables in the model building. Therefore, race and smoking were
+converted into factor variables with “White” being the reference group
+for race and “Never” being the reference group for smoking.
+
+The GAM models were then fitted. The first model, gam.m1, is a standard
+linear model with no smoothing terms. The second model, gam.m2, uses
+smoothing on age, bmi, SBP, LDL, and time since vaccination. There was
+reason to believe these variables were non-linear, therefore the
+smoothing allowed the variables to be used in the model. Finally, model
+3, gam.m3, includes a tensor product to model the interaction between
+height and weight.
+
+The three GAM models were then compared using an ANOVA test that
+provides the f-test; this was used to determine which model provides the
+best fit. Cross-validation for GAM tuning was then conducted using a
+10-fold cross-validation to tune to GAM model. The best hyperparameters
+and the final fitted model were then retrieved. The same model training
+procedure was used with the new, independent dataset, dat2.
+
+| Model  | Resid. Df | Resid. Dev |       Df |   Deviance |        F |   Pr(\>F) |
+|:-------|----------:|-----------:|---------:|-----------:|---------:|----------:|
+| gam.m1 |  4984.000 |   1509.442 |       NA |         NA |       NA |        NA |
+| gam.m2 |  4971.177 |   1380.053 | 12.82350 | 129.389611 | 36.37749 | 0.0000000 |
+| gam.m3 |  4968.540 |   1378.818 |  2.63652 |   1.234568 |  1.68820 | 0.1738572 |
+
+ANOVA Comparison of GAM Models (Dat1)
+
+<figure>
+<img src="DS2_Midterm_files/figure-gfm/gam2-gridplot-1.png"
+alt="Smooth terms for GAM model (gam.m2)" />
+<figcaption aria-hidden="true">Smooth terms for GAM model
+(gam.m2)</figcaption>
+</figure>
+
+<figure>
+<img src="DS2_Midterm_files/figure-gfm/vis-gam-1.png"
+alt="Visualization of Model 3 (dat1)" />
+<figcaption aria-hidden="true">Visualization of Model 3
+(dat1)</figcaption>
+</figure>
+
+    ##   select method
+    ## 2   TRUE GCV.Cp
+
+    ## 
+    ## Family: gaussian 
+    ## Link function: identity 
+    ## 
+    ## Formula:
+    ## .outcome ~ gender + diabetes + hypertension + smoking + race + 
+    ##     s(age) + s(SBP) + s(LDL) + s(bmi) + s(time) + s(height) + 
+    ##     s(weight)
+    ## 
+    ## Estimated degrees of freedom:
+    ## 0.991 0.000 0.000 4.179 7.892 1.234 0.000 
+    ##  total = 23.3 
+    ## 
+    ## GCV score: 0.2786734
+
+![](DS2_Midterm_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-16-2.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-16-3.png)<!-- -->
+
+| Model  | Resid. Df | Resid. Dev |       Df |  Deviance |         F |   Pr(\>F) |
+|:-------|----------:|-----------:|---------:|----------:|----------:|----------:|
+| gam.m1 |  984.0000 |   275.4546 |       NA |        NA |        NA |        NA |
+| gam.m2 |  977.7820 |   268.5783 | 6.217997 | 6.8762407 | 4.0341782 | 0.0004416 |
+| gam.m3 |  976.6323 |   268.2745 | 1.149679 | 0.3038207 | 0.9640406 | 0.3384056 |
+
+ANOVA Comparison of GAM Models (Dat2)
+
+Model 2 (gam.m2) was chosen to be the final model based on the
+improvements it made upon Model 1 (gam.m1), (pval=\<0.001).
 
 ![](DS2_Midterm_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
-``` r
-ggplot(dat2, aes(x = height, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
-  geom_smooth(method = "lm", col = "blue") + 
-  theme_minimal()
-```
+![](DS2_Midterm_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
-    ## `geom_smooth()` using formula = 'y ~ x'
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-18-2.png)<!-- -->
-
-``` r
-ggplot(dat2, aes(x = weight, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
-  geom_smooth(method = "lm", col = "blue") + 
-  theme_minimal()
-```
-
-    ## `geom_smooth()` using formula = 'y ~ x'
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-18-3.png)<!-- -->
-
-``` r
-ggplot(dat2, aes(x = bmi, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
-  geom_smooth(method = "lm", col = "blue") + 
-  theme_minimal()
-```
-
-    ## `geom_smooth()` using formula = 'y ~ x'
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-18-4.png)<!-- -->
-
-``` r
-ggplot(dat2, aes(x = SBP, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
-  geom_smooth(method = "lm", col = "blue") + 
-  theme_minimal()
-```
-
-    ## `geom_smooth()` using formula = 'y ~ x'
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-18-5.png)<!-- -->
-
-``` r
-ggplot(dat2, aes(x = LDL, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
-  geom_smooth(method = "lm", col = "blue") + 
-  theme_minimal()
-```
-
-    ## `geom_smooth()` using formula = 'y ~ x'
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-18-6.png)<!-- -->
-
-``` r
-ggplot(dat2, aes(x = time, y = log_antibody)) + 
-  geom_point(alpha = 0.5) + 
-  geom_smooth(method = "lm", col = "blue") + 
-  theme_minimal()
-```
-
-    ## `geom_smooth()` using formula = 'y ~ x'
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-18-7.png)<!-- -->
-
-### Assessing lineraity of Dat1
-
-``` r
-data(dat1)
-```
-
-    ## Warning in data(dat1): data set 'dat1' not found
-
-``` r
-x = model.matrix(log_antibody ~ ., dat1)
-y = dat1$log_antibody
-
-theme1 <- trellis.par.get()
-theme1$plot.symbol$col <- rgb(.2, .4, .2, .5)
-theme1$plot.symbol$pch <- 16
-theme1$plot.line$col <- rgb(.8, .1, .1, 1)
-theme1$plot.line$lwd <- 2
-theme1$strip.background$col <- rgb(.0, .2, .6, .2)
-
-trellis.par.set(theme1)
-
-featurePlot(x[, -c(5, 7)], y, plot = "scatter", labels = c("", "Y"),
-type = c("p"), layout = c(3, 2))
-```
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-19-2.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-19-3.png)<!-- -->
-
-### Creating factors for the Race and Smoking variables to use in the model–for Dat1
-
-``` r
-dat1$race = factor(dat1$race, 
-                         levels = c(1, 2, 3, 4), 
-                         labels = c("White", "Asian", "Black", "Hispanic"))
-
-dat1$smoking = factor(dat1$smoking, 
-                            levels = c(0, 1, 2), 
-                            labels = c("Never", "Former", "Current"))
-
-dat1$race = relevel(dat1$race, ref = "White")
-dat1$smoking = relevel(dat1$smoking, ref = "Never")
-```
-
-### Generalized Additive Model (GAM)–Using Dat1 data
-
-``` r
-set.seed(2)
-
-gam.m1 = gam(log_antibody ~ age + gender + race + smoking + height + weight + bmi + diabetes + hypertension + SBP + LDL + time,
-data = dat1)
-
-gam.m2 = gam(log_antibody ~ s(age) + gender + race + smoking + height + weight + s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + s(time),
-data = dat1)
-
-gam.m3 = gam(log_antibody ~ s(age) + gender + race + smoking + te(height, weight) + s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + s(time),
-data = dat1)
-
-anova(gam.m1, gam.m2, gam.m3, test = "F")
-```
-
-    ## Analysis of Deviance Table
-    ## 
-    ## Model 1: log_antibody ~ age + gender + race + smoking + height + weight + 
-    ##     bmi + diabetes + hypertension + SBP + LDL + time
-    ## Model 2: log_antibody ~ s(age) + gender + race + smoking + height + weight + 
-    ##     s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + s(time)
-    ## Model 3: log_antibody ~ s(age) + gender + race + smoking + te(height, 
-    ##     weight) + s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + 
-    ##     s(time)
-    ##   Resid. Df Resid. Dev      Df Deviance       F Pr(>F)    
-    ## 1    4984.0     1509.4                                    
-    ## 2    4971.2     1380.0 12.8235  129.390 36.3775 <2e-16 ***
-    ## 3    4968.5     1378.8  2.6365    1.235  1.6882 0.1739    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-``` r
-plot(gam.m2)
-```
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-22-2.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-22-3.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-22-4.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-22-5.png)<!-- -->
-
-``` r
-vis.gam(gam.m3, view = c("height","weight"),
-color = "topo")
-```
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
-
-``` r
-ctrl1 = trainControl(method = "cv", number = 10)
-x = dat1[, c("age", "gender", "race", "smoking", "height", "weight", "bmi", 
-              "diabetes", "hypertension", "SBP", "LDL", "time")]
-y = dat1$log_antibody
-
-set.seed(2)
-gam.fit = train(x, y,
-method = "gam",
-trControl = ctrl1)
-gam.fit$bestTune
-```
+# Final Model Results
 
     ##   select method
     ## 2   TRUE GCV.Cp
-
-``` r
-gam.fit$finalModel
-```
 
     ## 
     ## Family: gaussian 
@@ -715,125 +531,25 @@ gam.fit$finalModel
     ## 
     ## GCV score: 0.2786734
 
-### Assessing lineraity of Dat2
+    ## MSE: 0.3249953
 
-``` r
-data(dat2)
-```
+<figure>
+<img src="DS2_Midterm_files/figure-gfm/dx-plots-1.png"
+alt="Diagnostic Plots for Prediction Model on dat2" />
+<figcaption aria-hidden="true">Diagnostic Plots for Prediction Model on
+dat2</figcaption>
+</figure>
 
-    ## Warning in data(dat2): data set 'dat2' not found
-
-``` r
-x = model.matrix(log_antibody ~ ., dat2)
-y = dat2$log_antibody
-
-theme1 <- trellis.par.get()
-theme1$plot.symbol$col <- rgb(.2, .4, .2, .5)
-theme1$plot.symbol$pch <- 16
-theme1$plot.line$col <- rgb(.8, .1, .1, 1)
-theme1$plot.line$lwd <- 2
-theme1$strip.background$col <- rgb(.0, .2, .6, .2)
-
-trellis.par.set(theme1)
-
-featurePlot(x[, -c(5, 7)], y, plot = "scatter", labels = c("", "Y"),
-type = c("p"), layout = c(3, 2))
-```
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-25-2.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-25-3.png)<!-- -->
-
-### Creating factors for the Race and Smoking variables to use in the model–for Dat2
-
-``` r
-dat2$race = factor(dat2$race, 
-                         levels = c(1, 2, 3, 4), 
-                         labels = c("White", "Asian", "Black", "Hispanic"))
-
-dat2$smoking = factor(dat2$smoking, 
-                            levels = c(0, 1, 2), 
-                            labels = c("Never", "Former", "Current"))
-
-dat2$race = relevel(dat2$race, ref = "White")
-dat2$smoking = relevel(dat2$smoking, ref = "Never")
-```
-
-### Generalized Additive Model (GAM)–Using Dat2 data
-
-``` r
-set.seed(2)
-
-gam.m1 = gam(log_antibody ~ age + gender + race + smoking + height + weight + bmi + diabetes + hypertension + SBP + LDL + time,
-data = dat2)
-
-gam.m2 = gam(log_antibody ~ s(age) + gender + race + smoking + height + weight + s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + s(time),
-data = dat2)
-
-gam.m3 = gam(log_antibody ~ s(age) + gender + race + smoking + te(height, weight) + s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + s(time),
-data = dat2)
-
-anova(gam.m1, gam.m2, gam.m3, test = "F")
-```
-
-    ## Analysis of Deviance Table
-    ## 
-    ## Model 1: log_antibody ~ age + gender + race + smoking + height + weight + 
-    ##     bmi + diabetes + hypertension + SBP + LDL + time
-    ## Model 2: log_antibody ~ s(age) + gender + race + smoking + height + weight + 
-    ##     s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + s(time)
-    ## Model 3: log_antibody ~ s(age) + gender + race + smoking + te(height, 
-    ##     weight) + s(bmi) + diabetes + hypertension + s(SBP) + s(LDL) + 
-    ##     s(time)
-    ##   Resid. Df Resid. Dev     Df Deviance      F    Pr(>F)    
-    ## 1    984.00     275.45                                     
-    ## 2    977.78     268.58 6.2180   6.8762 4.0342 0.0004416 ***
-    ## 3    976.63     268.27 1.1497   0.3038 0.9640 0.3384056    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-``` r
-plot(gam.m2)
-```
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-28-2.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-28-3.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-28-4.png)<!-- -->![](DS2_Midterm_files/figure-gfm/unnamed-chunk-28-5.png)<!-- -->
-
-``` r
-vis.gam(gam.m3, view = c("height","weight"),
-color = "topo")
-```
-
-![](DS2_Midterm_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
-
-``` r
-ctrl1 = trainControl(method = "cv", number = 10)
-x = dat1[, c("age", "gender", "race", "smoking", "height", "weight", "bmi", 
-              "diabetes", "hypertension", "SBP", "LDL", "time")]
-y = dat1$log_antibody
-
-set.seed(2)
-gam.fit = train(x, y,
-method = "gam",
-trControl = ctrl1)
-gam.fit$bestTune
-```
-
-    ##   select method
-    ## 2   TRUE GCV.Cp
-
-``` r
-gam.fit$finalModel
-```
-
-    ## 
-    ## Family: gaussian 
-    ## Link function: identity 
-    ## 
-    ## Formula:
-    ## .outcome ~ gender + diabetes + hypertension + smoking + race + 
-    ##     s(age) + s(SBP) + s(LDL) + s(bmi) + s(time) + s(height) + 
-    ##     s(weight)
-    ## 
-    ## Estimated degrees of freedom:
-    ## 0.991 0.000 0.000 4.179 7.892 1.234 0.000 
-    ##  total = 23.3 
-    ## 
-    ## GCV score: 0.2786734
+The prediction model’s robustness and generalizability is mostly
+acceptable for . Prediction accuracy was determined by the mean squared
+error (MSE) at 0.325 showing a low average on unseen data. prediction
+model shows model stability with generalized cross-validation (GCV)
+score of 0.279. The Looking at @ref(fig:dx-plots) we evaluate Predicted
+vs Actual log_antibody Levels, Residuals vs Predicted, and the
+Distribution of Residuals. Predictions are mostly aligned with the
+observed values especially in the 9.5-10.5 predicted range. There is
+mild under-prediction below value 9. The predicted vs residual plot
+shows residuals mostly centered and near 0. Right-skewness can be
+observed in the predicted vs residual plots, which could suggest some
+non-linearity. The distribution of residuals looks approximately normal
+and does not have extreme outliers or multi-modality.
