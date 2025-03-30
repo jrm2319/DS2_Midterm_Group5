@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.30)  30 MAR 2025 16:39
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.30)  30 MAR 2025 16:42
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -475,7 +475,7 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 ! Missing $ inserted.
 <inserted text> 
                 $
-l.127 ...ear relationships can be seen in Figure}}
+l.127 ...n Figure @ref(fig:d2-log-antibody-lin).}}
                                                   \label{exploring-the-distr...
 I've inserted a begin-math/end-math symbol since I think
 you left one out. Proceed, with fingers crossed.
@@ -488,5 +488,5 @@ Here is how much of TeX's memory you used:
  34195 multiletter control sequences out of 15000+600000
  605904 words of font info for 79 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 89i,4n,93p,1706b,430s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 89i,4n,93p,1788b,430s stack positions out of 10000i,1000n,20000p,200000b,200000s
 !  ==> Fatal error occurred, no output PDF file produced!
