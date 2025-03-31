@@ -3,6 +3,8 @@ title: "Data Science 2 Midterm"
 author: Jasmin Martinez (JRM2319), Ixtaccihuatl Obregon, Elliot Kim
 date: 03/24/2025
 output: pdf_document
+header-includes:
+  - \usepackage{amsmath}
 ---
 
 ```{r, echo=FALSE}
@@ -80,8 +82,29 @@ We used the **resample()** function to conduct a robust comparison of all the mo
 
 The final model to predict **log_antibody** levels was the Generalized Additive (GAM) Model. The model equation is given by: 
 $$
-\text{log}_{\\antibody} = \beta_0 + s_1(\text{age}) + \beta_1 \cdot \text{gender} + \beta_2 \cdot \text{race} + \beta_3 \cdot \text{smoking} + \beta_4 \cdot \text{height} + \beta_5 \cdot \text{weight} + s_2(\text{bmi}) + \beta_6 \cdot \text{diabetes} + \beta_7 \cdot \text{hypertension} + s_3(\text{SBP}) + s_4(\text{LDL}) + s_5(\text{time}) + \varepsilon
+\begin{aligned}
+\text{log_antibody}_i =\ & 
+\mathbf{10.23} 
+- \mathbf{0.30} \cdot \text{gender}_i 
++ \mathbf{0.014} \cdot \text{diabetes}_i 
+- \mathbf{0.0078} \cdot \text{hypertension}_i \\
+& + \mathbf{0.0222} \cdot \text{smokingFormer}_i 
+- \mathbf{0.1932} \cdot \text{smokingCurrent}_i \\
+& - \mathbf{0.0033} \cdot \text{raceAsian}_i 
+- \mathbf{0.0105} \cdot \text{raceBlack}_i 
+- \mathbf{0.0374} \cdot \text{raceHispanic}_i \\
+& + f_1(\text{age}_i) 
++ f_2(\text{SBP}_i) 
++ f_3(\text{LDL}_i) 
++ f_4(\text{bmi}_i) \\
+& + f_5(\text{time}_i) 
++ f_6(\text{height}_i) 
++ f_7(\text{weight}_i) 
++ \varepsilon_i
+\end{aligned}
 $$
+
+Using GAM allows for flexibility and interpretability for non-linear relationships. After comparing GAM specification via ANOVA for model 1, model2, and model 3 for **dat1** and **dat2**, model 2 was chosen. The model has an adjusted $R^2 = 0.22$, showing non-linear effects contribute meaningful variance explanation. Some significant predictors would be gender, smoking, smmoth(age), amoth(bmi), and smooth(time), all with pval<0.0.001)
 
 The prediction model's robustness and generalizability is mostly acceptable for **dat2**. Prediction accuracy was determined by the mean squared error (MSE) at 0.325 showing a low average on unseen data. The prediction model shows model stability with generalized cross-validation (GCV) score of 0.279. Looking at \@ref(fig:dx-plots) we evaluate Predicted vs Actual log_antibody Levels, Residuals vs Predicted, and the Distribution of Residuals. Predictions are mostly aligned with the observed values especially in the 9.5-10.5 predicted range. There is mild under-prediction below value 9, which indicates that the model may tend to underestimate lower antibody levels but perform well in the 9.5-10.5 predicted range. The predicted vs residual plot shows residuals mostly centered and near 0. Right-skewness can be observed in the predicted vs residual plots, which could suggest some non-linearity. The distribution of residuals looks approximately normal and does not have extreme outliers or multi-modality. 
 
@@ -514,7 +537,7 @@ method = "gam",
 trControl = ctrl1)
 tune = gam.fit$bestTune
 mod_score = gam.fit$finalModel
-
+summary(mod_score)
 # Model on Dataset 2
 x_test = dat2[, c("age", "gender", "race", "smoking", "height", "weight", "bmi",
                    "diabetes", "hypertension", "SBP", "LDL", "time")]
@@ -528,6 +551,7 @@ predict_table_d2 = tibble(
   actual = y_test,
   residual = y_test - predict(gam.fit$finalModel, dat2)
 )
+
 ```
 
 
@@ -566,8 +590,6 @@ rs <- resamples(list(lm = fit.lm,
 sum_rs = summary(rs, metric = "RMSE")
 bwplot(rs, metric = "RMSE")
 ```
-
-
 
 
 ```{r dx-plots, fig.cap="Diagnostic Plots for Prediction Model on dat2", echo=FALSE}
