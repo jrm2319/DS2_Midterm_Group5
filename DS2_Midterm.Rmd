@@ -43,15 +43,18 @@ The exploration and evaluation of **dat1** is used to help build a prediction mo
 
 
 # Model Trainging 
-The **dat1** dataset was split into training and testing datasets in a 80-20 split using the function **initial_split()**. Using the **train()** function, a multiple linear regression , ridge, lasso, generalized additive model, and a multivariate adaptive regression splines model were fitted to determine the optimal model for the data. All models used a 10-fold cross-validation that was determined by using **method = cv** and **number = 10** in the **trainControl()** function. 
+The **dat1** dataset is the designated training data and **dat2** is the testing dataset. Using the **train()** function, a multiple linear regression , ridge, lasso, generalized additive model, and a multivariate adaptive regression splines model were fitted to determine the optimal model for the data. All models used a 10-fold cross-validation that was determined by using **method = cv** and **number = 10** in the **trainControl()** function. 
 
 **Multiple Linear Regression Model**
 A multiple linear regression model is simple and easy to use when working with linearly dependent data but works under the assumption of homoscedasticity and no multicollinearity. Fitting this model required **method = lm** in the **train()** function, resulting in $R^2 = 0.1470498$ and $R_{adj}^2 = 0.03320516$ indicating a poor fit. 
 
-**Ridge Regression**
+**Ridge and Lasso Regression**
 
+Ridge and lasso models are useful for improving prediction accuracy when dealing with multiple predictors. These models help prevent overfitting through the inclusion of a penalty term that regularizes coefficient estimates. A key component to these models is the lambda tuning parameter, which controls the strength of the penality applied to the coefficients. 
 
-**Lasso Regression**
+The models were fit using the Caret train() function and specifying the method = "glmnet", which allows the adjustment of the alpha parameter in which alpha = 1 for a lasso regression (L1 regularization) and alpha = 0 for a ridge regression (L2 regularization). The tuning parameter (lambda) for each model was selected by a 10-fold cross-validation. To explore a wide range of lambda values, a sequence of 100 exponentially spaced values between -5 and 6 was specified in the tuneGrid argument of Caret's train() function. These models assume that the relationship between the predictors and the outcome is linear. 
+
+While the lasso regression model conducts variable selection by shrinking coefficients to 0, the ridge regression model can only shrink coefficients towards 0. Therefore, the lasso regression model is useful for handling multiple predictors while the ridge regression model helps reduce the size of the coefficients for all predictors and is useful for handling predictors that are highly correlated, thereby preventing multicollinearity.
 
 
 **Generalized Additive Model (GAM)**
@@ -71,8 +74,13 @@ The Multivariate Adaptive Regression Splines (MARS) model is a flexible non-line
 
 **Re-sampling and final model selection**
 
+We used the **resample()** function to conduct a robust comparison of all the models listed above, with the performance metric being the Root Mean Squared Error (RMSE). The models included in this analysis were Multiple Linear Regression, Lasso Regression, Ridge Regression, Multivariate Adaptive Regression Splines (MARS), and the Generalized Additive Model (GAM). As illustrated in the results below, the GAM model demonstrated the lowest RMSE, with a value of 0.531, indicating its superior predictive accuracy. This was closely followed by the MARS model, which had an RMSE of 0.530, highlighting its strong performance as well. Consistent with expectations, the simplest model, Multiple Linear Regression, exhibited the highest RMSE of 0.552, reflecting its limitations in capturing complex relationships within the data compared to more advanced models.
 
 # Final Model Results 
+
+The final model to predict **log_antibody** levels was the Generalized Additive (GAM) Model. The model equation is given by: 
+
+
 The prediction model's robustness and generalizability is mostly acceptable for **dat2**. Prediction accuracy was determined by the mean squared error (MSE) at 0.325 showing a low average on unseen data. The prediction model shows model stability with generalized cross-validation (GCV) score of 0.279. Looking at \@ref(fig:dx-plots) we evaluate Predicted vs Actual log_antibody Levels, Residuals vs Predicted, and the Distribution of Residuals. Predictions are mostly aligned with the observed values especially in the 9.5-10.5 predicted range. There is mild under-prediction below value 9, which indicates that the model may tend to underestimate lower antibody levels but perform well in the 9.5-10.5 predicted range. The predicted vs residual plot shows residuals mostly centered and near 0. Right-skewness can be observed in the predicted vs residual plots, which could suggest some non-linearity. The distribution of residuals looks approximately normal and does not have extreme outliers or multi-modality. 
 
 \newpage
@@ -277,7 +285,7 @@ p7.2 = ggplot(dat2, aes(x = time, y = log_antibody)) +
 (p1.2 | p2.2 | p3.2) / (p4.2 | p5.2 | p6.2) / p7.2
 ```
 
-```{r, fig.width=4, fig.height=3, out.width='80%', fig.align='center',echo=FALSE}
+```{r, fig.width=4, fig.height=3, out.width='80%', fig.align='center', eval = FALSE, echo=FALSE}
 ### Assessing lineraity of Dat1
 x = model.matrix(log_antibody ~ ., dat1)
 y = dat1$log_antibody
@@ -313,10 +321,7 @@ dat1$smoking = relevel(dat1$smoking, ref = "Never")
 ```{r}
 ### LM Modeling 
 set.seed(2)
-datSplit <- initial_split(data = dat1, prop = 0.8)
-trainData <- training(datSplit)
-testData <- testing(datSplit)
-head(trainData)
+head(dat1)
 fit.lm <- train(log_antibody ~ age + gender + race + smoking + height + weight + bmi + diabetes + hypertension + SBP + LDL + time,
                data = dat1,
                method = "lm",
@@ -330,20 +335,9 @@ fit.lm$results$RsquaredSD
 
 ```{r, echo=FALSE}
 ###  Ridge Modeling
-set.seed(2)
-# Split data into training and testing datasets 80/20 split
-dat1_split = initial_split(dat1, prop = 0.8)
-
-# Extract training and test data
-dat1_train = training(dat1_split)
-dat1_test = testing(dat1_split)
-```
-
-## Ridge regression
-```{r, echo=FALSE}
 # matrix of predictors
-x = model.matrix(log_antibody ~., trainData)[,-1]
-y = trainData[, "log_antibody"] 
+x = model.matrix(log_antibody ~., dat1)[,-1]
+y = dat1[, "log_antibody"] 
 
 corrplot(cor(x), method = "circle", type = "full")
 
@@ -351,7 +345,7 @@ corrplot(cor(x), method = "circle", type = "full")
 ctrl1 = trainControl(method = "cv", number = 10)
 set.seed(2)
 ridge.fit <- train(log_antibody ~., 
-                   data = trainData,
+                   data = dat1,
                    method = "glmnet",
                    tuneGrid = expand.grid(alpha = 0,
                                           lambda = exp(seq(6, -5, length = 100))),
@@ -367,7 +361,7 @@ coef(ridge.fit$finalModel, ridge.fit$bestTune$lambda)
 set.seed(2)
 # fitting lasso using caret
 lasso.fit = train(log_antibody ~.,
-                  data = trainData,
+                  data = dat1,
                   method = "glmnet",
                   tuneGrid = expand.grid(alpha = 1,
                                          lambda = exp(seq(6, -5, length = 100))),
@@ -425,7 +419,7 @@ kable(anova_table, caption = "ANOVA Comparison of GAM Models (Dat1)")
 draw(gam.m2)
 ```
 
-```{r vis-gam, fig.width=4, fig.height=3, out.width='90%', fig.align='center', fig.cap="Visualization of Model 3 (dat1)", echo=FALSE}
+```{r vis-gam, fig.width=4, fig.height=3, out.width='90%', fig.align='center', fig.cap="Visualization of Model 3 (dat1)", eval = FALSE, echo=FALSE}
 vis.gam(gam.m3, view = c("height","weight"),
 color = "topo")
 ```
@@ -436,16 +430,16 @@ ctrl1 <- trainControl(method = "cv", number = 10)
 set.seed(2)
 
 gam.fit <- train(log_antibody ~ age + gender + race + smoking + height + weight + bmi + diabetes + hypertension + SBP + LDL + time,
-                 data = trainData,
+                 data = dat1,
                  method = "gam",
                  trControl = ctrl1)
 
-summary(gam.fit)
-gam.fit$bestTune
-gam.fit$finalModel
+sum_gam_d1 = summary(gam.fit)
+tune_gam_d1 = gam.fit$bestTune
+finmod_gam_d1 = gam.fit$finalModel
 ```
 
-```{r, fig.width=4, fig.height=3, out.width='80%', fig.align='center', echo=FALSE}
+```{r, fig.width=4, fig.height=3, out.width='80%', fig.align='center', eval = FALSE, echo=FALSE}
 ### Assessing linearity of Dat2
 x = model.matrix(log_antibody ~ ., dat2)
 y = dat2$log_antibody
@@ -504,7 +498,7 @@ kable(anova_table, caption = "ANOVA Comparison of GAM Models (Dat2)")
 draw(gam.m2)
 ```
 
-```{r, fig.width=4, fig.height=3, out.width='90%', fig.align='center', echo=FALSE}
+```{r, fig.width=4, fig.height=3, out.width='90%', fig.align='center', eval = FALSE, echo=FALSE}
 vis.gam(gam.m3, view = c("height","weight"),
 color = "topo")
 ```
@@ -514,9 +508,9 @@ color = "topo")
 ### MARS Modeling 
 set.seed(2)
 x = model.matrix(log_antibody ~ age + gender + race + smoking + height + weight + bmi +
-                   diabetes + hypertension + SBP + LDL + time, data = trainData)[, -1] 
+                   diabetes + hypertension + SBP + LDL + time, data = dat1)[, -1] 
 
-y = trainData$log_antibody
+y = dat1$log_antibody
 ctrl1 = trainControl(method = "cv", number = 10)
 mars_grid = expand.grid(degree = 1:4,
                         nprune = 2:20)
@@ -524,18 +518,15 @@ set.seed(2)
 mars.fit = train(x, y, method = "earth",
                  tuneGrid = mars_grid, trControl = ctrl1) 
 ggplot(mars.fit)
-
-mars.fit$bestTune
-coef(mars.fit$finalModel)
+mars_tune = mars.fit$bestTune
+mars_coef = coef(mars.fit$finalModel)
 
 x_test = model.matrix(log_antibody ~ age + gender + race + smoking + height + weight + bmi +
-                        diabetes + hypertension + SBP + LDL + time, data = testData)[, -1]
-y_test = testData$log_antibody
+                        diabetes + hypertension + SBP + LDL + time, data = dat2)[, -1]
+y_test = dat2$log_antibody
 predictions = predict(mars.fit, newdata = x_test)
 mse = mean((predictions- y_test)^2)
-cat("MSE:", format(mse, nsmall = 3), "\n")
-
-dim(x)
+#cat("MSE:", format(mse, nsmall = 3), "\n")
 ```
 
 ```{r rs-plots, fig.cap="Model Comparison (RMSE)", echo=FALSE}
@@ -545,7 +536,7 @@ rs <- resamples(list(lm = fit.lm,
                      lasso = lasso.fit,
                      gam = gam.fit,
                      mars = mars.fit))
-summary(rs, metric = "RMSE")
+sum_rs = summary(rs, metric = "RMSE")
 bwplot(rs, metric = "RMSE")
 
 ```
