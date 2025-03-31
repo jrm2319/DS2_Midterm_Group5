@@ -79,7 +79,9 @@ We used the **resample()** function to conduct a robust comparison of all the mo
 # Final Model Results 
 
 The final model to predict **log_antibody** levels was the Generalized Additive (GAM) Model. The model equation is given by: 
-
+$$
+\text{log}_{\\antibody} = \beta_0 + s_1(\text{age}) + \beta_1 \cdot \text{gender} + \beta_2 \cdot \text{race} + \beta_3 \cdot \text{smoking} + \beta_4 \cdot \text{height} + \beta_5 \cdot \text{weight} + s_2(\text{bmi}) + \beta_6 \cdot \text{diabetes} + \beta_7 \cdot \text{hypertension} + s_3(\text{SBP}) + s_4(\text{LDL}) + s_5(\text{time}) + \varepsilon
+$$
 
 The prediction model's robustness and generalizability is mostly acceptable for **dat2**. Prediction accuracy was determined by the mean squared error (MSE) at 0.325 showing a low average on unseen data. The prediction model shows model stability with generalized cross-validation (GCV) score of 0.279. Looking at \@ref(fig:dx-plots) we evaluate Predicted vs Actual log_antibody Levels, Residuals vs Predicted, and the Distribution of Residuals. Predictions are mostly aligned with the observed values especially in the 9.5-10.5 predicted range. There is mild under-prediction below value 9, which indicates that the model may tend to underestimate lower antibody levels but perform well in the 9.5-10.5 predicted range. The predicted vs residual plot shows residuals mostly centered and near 0. Right-skewness can be observed in the predicted vs residual plots, which could suggest some non-linearity. The distribution of residuals looks approximately normal and does not have extreme outliers or multi-modality. 
 
@@ -146,12 +148,12 @@ ggplot(dat1, aes(y = log_antibody)) +
 
 ```{r, eval=FALSE, echo=FALSE}
 ## Summarize continuous variables
-summary(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
+cont_sum = summary(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
 ```
 
 ```{R, eval=FALSE, echo=FALSE}
 ## Assess correlation among continuous variables
-cor(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
+correlation = cor(dat1[, c("age", "height", "weight", "bmi", "SBP", "LDL", "time", "log_antibody")])
 ```
 
 ```{R d1-log-antibody-lin, fig.cap="Linearity between log\\_antibody levels and covariates for dat1", message=FALSE, echo=FALSE}
@@ -318,16 +320,16 @@ dat1$smoking = relevel(dat1$smoking, ref = "Never")
 ```
 
 
-```{r}
+```{r, echo=FALSE}
 ### LM Modeling 
 set.seed(2)
-head(dat1)
+#head(dat1)
 fit.lm <- train(log_antibody ~ age + gender + race + smoking + height + weight + bmi + diabetes + hypertension + SBP + LDL + time,
                data = dat1,
                method = "lm",
                trControl = trainControl(method = "cv", number = 10))
-fit.lm$results$Rsquared
-fit.lm$results$RsquaredSD
+r = fit.lm$results$Rsquared
+r_sq = fit.lm$results$RsquaredSD
 
 # result: model is poor fit 
 ```
@@ -367,9 +369,9 @@ lasso.fit = train(log_antibody ~.,
                                          lambda = exp(seq(6, -5, length = 100))),
                   trControl = ctrl1)
 
-lasso.fit$bestTune
+lasso_tune = lasso.fit$bestTune
 plot(lasso.fit, xTrans = log)
-coef(lasso.fit$finalModel, lasso.fit$bestTune$lambda)
+lasso_coef = coef(lasso.fit$finalModel, lasso.fit$bestTune$lambda)
 
 # OR 
 #set.seed(2)
@@ -379,6 +381,7 @@ coef(lasso.fit$finalModel, lasso.fit$bestTune$lambda)
 #coef(cv.lasso, s = "lambda.min")
 #head(predict(cv.lasso, newx = x, s = "lambda.min"))
 ```
+
 ```{r tune-table, fig.cap="Optimal Tuning Parameters for Ridge and Lasso Regressio" , echo=FALSE}
 # Ridge and Lasso tuning para 
 tuning_table <- data.frame(
@@ -390,8 +393,6 @@ tuning_table <- data.frame(
 kable(tuning_table, caption = "Optimal Tuning Parameters for Ridge and Lasso Regression")
 
 ```
-
-
 
 ```{r d1-anova-table, fig.cap="ANOVA Comparison of GAM Models (Dat1)" , echo=FALSE}
 ### Generalized Additive Model (GAM)--Using Dat1 data
@@ -415,7 +416,6 @@ kable(anova_table, caption = "ANOVA Comparison of GAM Models (Dat1)")
 ```
 
 ```{r gam2-gridplot, fig.cap="Smooth terms for GAM model (gam.m2)", echo=FALSE}
-#plot(gam.m2)
 draw(gam.m2)
 ```
 
@@ -424,11 +424,10 @@ vis.gam(gam.m3, view = c("height","weight"),
 color = "topo")
 ```
 
-```{r gam-plots, fig.cap="---", echo=FALSE, echo=FALSE}
+```{r gam-plots, fig.cap="---", eval=FALSE, echo=FALSE}
 ## GAM train()
 ctrl1 <- trainControl(method = "cv", number = 10)
 set.seed(2)
-
 gam.fit <- train(log_antibody ~ age + gender + race + smoking + height + weight + bmi + diabetes + hypertension + SBP + LDL + time,
                  data = dat1,
                  method = "gam",
@@ -494,13 +493,41 @@ kable(anova_table, caption = "ANOVA Comparison of GAM Models (Dat2)")
 
 
 ```{r, echo=FALSE}
-#plot(gam.m2)
 draw(gam.m2)
 ```
 
 ```{r, fig.width=4, fig.height=3, out.width='90%', fig.align='center', eval = FALSE, echo=FALSE}
 vis.gam(gam.m3, view = c("height","weight"),
 color = "topo")
+```
+
+```{r, echo=FALSE}
+# Model on Dataset 1
+ctrl1 = trainControl(method = "cv", number = 10)
+x = dat1[, c("age", "gender", "race", "smoking", "height", "weight", "bmi", 
+              "diabetes", "hypertension", "SBP", "LDL", "time")]
+y = dat1$log_antibody
+
+set.seed(2)
+gam.fit = train(x, y,
+method = "gam",
+trControl = ctrl1)
+tune = gam.fit$bestTune
+mod_score = gam.fit$finalModel
+
+# Model on Dataset 2
+x_test = dat2[, c("age", "gender", "race", "smoking", "height", "weight", "bmi",
+                   "diabetes", "hypertension", "SBP", "LDL", "time")]
+y_test = dat2$log_antibody
+predictions = predict(gam.fit$finalModel, newdata = dat2)
+mse = mean((predictions- dat2$log_antibody)^2)
+#cat("MSE:", format(mse, nsmall = 3), "\n")
+
+predict_table_d2 = tibble(
+  fitted = predictions,
+  actual = y_test,
+  residual = y_test - predict(gam.fit$finalModel, dat2)
+)
 ```
 
 
@@ -538,38 +565,10 @@ rs <- resamples(list(lm = fit.lm,
                      mars = mars.fit))
 sum_rs = summary(rs, metric = "RMSE")
 bwplot(rs, metric = "RMSE")
-
 ```
 
 
-```{r, echo=FALSE}
-# Model on Dataset 1
-ctrl1 = trainControl(method = "cv", number = 10)
-x = dat1[, c("age", "gender", "race", "smoking", "height", "weight", "bmi", 
-              "diabetes", "hypertension", "SBP", "LDL", "time")]
-y = dat1$log_antibody
 
-set.seed(2)
-gam.fit = train(x, y,
-method = "gam",
-trControl = ctrl1)
-tune = gam.fit$bestTune
-mod_score = gam.fit$finalModel
-
-# Model on Dataset 2
-x_test = dat2[, c("age", "gender", "race", "smoking", "height", "weight", "bmi",
-                   "diabetes", "hypertension", "SBP", "LDL", "time")]
-y_test = dat2$log_antibody
-predictions = predict(gam.fit$finalModel, newdata = dat2)
-mse = mean((predictions- dat2$log_antibody)^2)
-#cat("MSE:", format(mse, nsmall = 3), "\n")
-
-predict_table_d2 = tibble(
-  fitted = predictions,
-  actual = y_test,
-  residual = y_test - predict(gam.fit$finalModel, dat2)
-)
-```
 
 ```{r dx-plots, fig.cap="Diagnostic Plots for Prediction Model on dat2", echo=FALSE}
 p1.dx = ggplot(predict_table_d2, aes(x = predictions, y = actual)) +
