@@ -26,6 +26,8 @@ library(bayesQR)
 library(patchwork)
 library(knitr)
 library(gratia)
+library(glmnet)
+library(corrplot)
   })
 })
 ```
@@ -42,11 +44,16 @@ The exploration and evaluation of **dat1** is used to help build a prediction mo
 \newpage
 
 # Model Trainging 
-** Multiple Linear Regression **
 
-** Ridge and Lasso Regression **
+**Multiple Linear Regression**
 
-** Generalized Additive Model (GAM) **
+A multiple linear regression model is simple and easy to use when working with linearly dependent data but works under the assumption of homoscedasticity and no multicollinearity. Fitting this model required ** method = lm ** in the ** train()** function, resulting in $R^2 = 0.1470498 $ and $R_{adj}^2 = 0.03320516$ indicating a poor fit. 
+
+**Ridge and Lasso Regression**
+
+
+**Generalized Additive Model (GAM)**
+
 A Generalized Additive Model (GAM) was created to model log-transformed antibody level. Predictors included age, gender, race, smoking, height, weight, BMI, diabetes, hypertension, SBP, LDL, and time since vaccination. To prepare the data for modeling, the model matrix, x, was created using the outcome and all predictors listed above and extracted the response variable, y. Given that race and smoking were categorical variables with multiple categories, some re-coding was necessary to use these variables in the model building. Therefore, race and smoking were converted into factor variables with “White” being the reference group for race and “Never” being the reference group for smoking. 
 
 The GAM models were then fitted. The first model, gam.m1, is a standard linear model with no smoothing terms. The second model, gam.m2, uses smoothing on age, bmi, SBP, LDL, and time since vaccination. There was reason to believe these variables were non-linear, therefore the smoothing allowed the variables to be used in the model. Finally, model 3, gam.m3, includes a tensor product to model the interaction between height and weight. 
@@ -55,9 +62,13 @@ The three GAM models were then compared using an ANOVA test that provides the f-
 
 Model 2 (gam.m2) was chosen to be the final model based on the improvements it made upon Model 1 (gam.m1), (pval=<0.001).
 
-** Multivariate Adaptive Regression Splines **
+**Multivariate Adaptive Regression Splines Model**
 
-** Resampling and final model selection **
+The Multivariate Adaptive Regression Splines (MARS) model is a flexible non-linear model technique used to evaluate the relationship between an outcome and multiple covariates. MARS divides the data into segments and fits a piecewise linear regressions for each segment. MARS is used to model **log_antibody** levels based on clinical and demographic predictors. The model is tuned on two hyperparameters: **nprune** for the most number of terms and **degree** for the most amount of degree interactions between predictors. 
+
+
+**Re-sampling and final model selection**
+
 
 # Final Model Results 
 The prediction model's robustness and generalizability is mostly acceptable for **dat2**. Prediction accuracy was determined by the mean squared error (MSE) at 0.325 showing a low average on unseen data. The prediction model shows model stability with generalized cross-validation (GCV) score of 0.279. Looking at \@ref(fig:dx-plots) we evaluate Predicted vs Actual log_antibody Levels, Residuals vs Predicted, and the Distribution of Residuals. Predictions are mostly aligned with the observed values especially in the 9.5-10.5 predicted range. There is mild under-prediction below value 9, which indicates that the model may tend to underestimate lower antibody levels but perform well in the 9.5-10.5 predicted range. The predicted vs residual plot shows residuals mostly centered and near 0. Right-skewness can be observed in the predicted vs residual plots, which could suggest some non-linearity. The distribution of residuals looks approximately normal and does not have extreme outliers or multi-modality. 
@@ -299,17 +310,82 @@ dat1$smoking = relevel(dat1$smoking, ref = "Never")
 
 ```{r}
 ### LM Modeling 
+set.seed(2)
+datSplit <- initial_split(data = dat1, prop = 0.8)
+trainData <- training(datSplit)
+testData <- testing(datSplit)
+head(trainData)
+fit.lm <- train(log_antibody ~ age + gender + race + smoking + height + weight + bmi + diabetes + hypertension + SBP + LDL + time,
+               data = dat1,
+               method = "lm",
+               trControl = trainControl(method = "cv", number = 10))
+fit.lm$results$Rsquared
+fit.lm$results$RsquaredSD
 
-
+#r2= 0.1470498
+# adjusted r2=0.03320516
+# result: model is poor fit 
 ```
 
 
 ```{r}
 ###  Ridge Modeling
+set.seed(2)
+# Split data into training and testing datasets 80/20 split
+dat1_split = initial_split(dat1, prop = 0.8)
+
+# Extract training and test data
+dat1_train = training(dat1_split)
+dat1_test = testing(dat1_split)
+```
+
+## Ridge regression
+```{r}
+# matrix of predictors
+x = model.matrix(log_antibody ~., trainData)[,-1]
+y = trainData[, "log_antibody"] 
+
+corrplot(cor(x), method = "circle", type = "full")
+
+# fitting Ridge regression using caret
+ctrl1 = trainControl(method = "cv", number = 10)
+set.seed(2)
+ridge.fit <- train(log_antibody ~., 
+                   data = trainData,
+                   method = "glmnet",
+                   tuneGrid = expand.grid(alpha = 0,
+                                          lambda = exp(seq(6, -5, length = 100))),
+                   trControl = ctrl1)
+
+plot(ridge.fit, xTrans = log)
+ridge.fit$bestTune
+coef(ridge.fit$finalModel, ridge.fit$bestTune$lambda)
 ```
 
 ```{r}
 ### Lasso Modeling
+set.seed(2)
+# fitting lasso using caret
+lasso.fit = train(log_antibody ~.,
+                  data = trainData,
+                  method = "glmnet",
+                  tuneGrid = expand.grid(alpha = 1,
+                                         lambda = exp(seq(6, -5, length = 100))),
+                  trControl = ctrl1)
+
+lasso.fit$bestTune
+plot(lasso.fit, xTrans = log)
+coef(lasso.fit$finalModel, lasso.fit$bestTune$lambda)
+
+# OR 
+
+
+set.seed(2)
+cv.lasso <- cv.glmnet(x, y, alpha = 1, lambda = exp(seq(6, -5, length = 100)))
+plot(cv.lasso)
+plot_glmnet(cv.lasso$glmnet.fit)
+coef(cv.lasso, s = "lambda.min")
+head(predict(cv.lasso, newx = x, s = "lambda.min"))
 ```
 
 
@@ -427,9 +503,9 @@ color = "topo")
 ### MARS Modeling 
 set.seed(2)
 x = model.matrix(log_antibody ~ age + gender + race + smoking + height + weight + bmi +
-                   diabetes + hypertension + SBP + LDL + time, data = dat1)[, -1] 
+                   diabetes + hypertension + SBP + LDL + time, data = trainData)[, -1] 
 
-y = dat1$log_antibody
+y = trainData$log_antibody
 ctrl1 = trainControl(method = "cv", number = 10)
 mars_grid = expand.grid(degree = 1:3,
                         nprune = 2:20)
@@ -442,8 +518,8 @@ mars.fit$bestTune
 coef(mars.fit$finalModel)
 
 x_test = model.matrix(log_antibody ~ age + gender + race + smoking + height + weight + bmi +
-                        diabetes + hypertension + SBP + LDL + time, data = dat2)[, -1]
-y_test = dat2$log_antibody
+                        diabetes + hypertension + SBP + LDL + time, data = testData)[, -1]
+y_test = testData$log_antibody
 predictions = predict(mars.fit, newdata = x_test)
 mse = mean((predictions- y_test)^2)
 cat("MSE:", format(mse, nsmall = 3), "\n")
@@ -451,6 +527,18 @@ cat("MSE:", format(mse, nsmall = 3), "\n")
 dim(x)
 ```
 
+```{r}
+### Resampling
+
+#Lm model for the resampling:
+set.seed(2)
+fit.lm <- train(log_antibody ~ age + gender + race + smoking + height + weight + bmi + diabetes + hypertension + SBP + LDL + time,
+data = trainData,
+method = "lm",
+trControl = trainControl(method = "cv", number = 10))
+
+
+```
 
 
 ```{r, echo=FALSE}
